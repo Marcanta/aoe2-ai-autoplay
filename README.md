@@ -114,15 +114,27 @@ python -m aoe2_ai.execution --check          # see which keys your keyboard send
 
 Details, safety rules and the perception investigation: [docs/town_center_controller.md](docs/town_center_controller.md).
 
+## Idle villager controller
+
+`aoe2_ai/controllers/idle_villager.py` finds idle villagers and selects them one at a time, without giving orders yet. It reads the top-bar idle-villager button (yellow = some idle, grey = none, plus the count), presses the game's "next idle villager" hotkey (`.`) through the same `ActionExecutor`, and checks on screen that a villager is now selected. It visits each idle villager once per pass, then waits until the idle set changes.
+
+```powershell
+python -m aoe2_ai.controllers idle-villager --dry-run -v   # decide and log, send nothing
+python -m aoe2_ai.controllers idle-villager                 # live; same stop keys as above
+```
+
+Details, the perception investigation and the repeat-prevention rules: [docs/idle_villager_controller.md](docs/idle_villager_controller.md).
+
 ## Safety
 
-`pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled. The Town Center controller also stops on **F12** or **Pause** (`--stop-key`) and Ctrl+C, and never sends input unless Age of Empires II is the foreground window.
+`pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled. The controllers also stop on **F12** or **Pause** (`--stop-key`) and Ctrl+C, and never send input unless Age of Empires II is the foreground window.
 
 ## Roadmap
 
 - [ ] Reliable game-window capture and resolution handling
 - [x] Read resources, population, game time, age and selected object from the HUD (`aoe2_ai/perception`)
-- [ ] Idle villagers; faster OCR
+- [x] Idle villagers: detect and select (`aoe2_ai/controllers/idle_villager.py`)
+- [ ] Faster OCR
 - [x] Town Center: queue idle/producing, villager button (`aoe2_ai/perception/town_center.py`)
 - [x] Safe action execution and a deterministic villager-production controller
 - [ ] Action schema (build, train, gather, attack, scout) with pydantic

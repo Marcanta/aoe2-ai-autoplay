@@ -19,6 +19,10 @@
     "tc_queue_context_top": {"x": 405, "y": 915, "w": 125, "h": 7, "kind": "bar", "calibrated": true},
     "tc_queue_progress": {"x": 441, "y": 927, "w": 160, "h": 18, "kind": "text", "calibrated": true, "dark_text": true},
     "tc_queue_item": {"x": 441, "y": 943, "w": 160, "h": 16, "kind": "text", "calibrated": true, "dark_text": true},
-    "tc_villager_button": {"x": 20, "y": 908, "w": 35, "h": 35, "kind": "icon", "calibrated": true}
+    "tc_villager_button": {"x": 20, "y": 908, "w": 35, "h": 35, "kind": "icon", "calibrated": true},
+    "idle_icon": {"x": 458, "y": 10, "w": 27, "h": 27, "kind": "icon", "calibrated": true},
+    "idle_count": {"x": 470, "y": 26, "w": 18, "h": 12, "kind": "digits", "calibrated": true},
+    "villager_build_button": {"x": 20, "y": 908, "w": 35, "h": 35, "kind": "icon", "calibrated": true},
+    "view_center": {"x": 760, "y": 400, "w": 160, "h": 140, "kind": "icon", "calibrated": true}
   }
 }

@@ -503,60 +503,21 @@ def _food_delta(before: Observation, after: Observation) -> str:
 
 # --- CLI ---------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> None:
+    from .runtime import add_common_args, run_live, setup_logging
+
     parser = argparse.ArgumentParser(description="Keep the Town Center producing villagers.")
-    parser.add_argument("--dry-run", action="store_true", help="observe and decide, but never send input")
     parser.add_argument("--config", type=Path, help="JSON file with TownCenterConfig fields")
     parser.add_argument("--select-key", help="hotkey that selects the Town Center (default h)")
     parser.add_argument("--train-key", help="hotkey that trains a villager (default q)")
-    parser.add_argument("--stop-key", default="f12,pause", help="emergency stop key(s), comma-separated (default f12,pause); "
-                        "check yours with: python -m aoe2_ai.execution --check")
-    parser.add_argument("--max-cycles", type=int, help="stop after this many cycles")
-    parser.add_argument("--delay", type=float, default=5.0, help="seconds before starting (to switch to the game)")
-    parser.add_argument("-v", "--verbose", action="store_true")
+    add_common_args(parser)
     args = parser.parse_args(argv)
 
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
-    logging.getLogger("pytesseract").setLevel(logging.INFO)  # one debug line per OCR call drowns -v output
+    setup_logging(args.verbose)
     config = TownCenterConfig.from_json(args.config) if args.config else TownCenterConfig()
     overrides = {k: v for k, v in (("select_hotkey", args.select_key), ("train_hotkey", args.train_key)) if v}
     if overrides:
         config = TownCenterConfig(**{**asdict(config), **overrides})
-
-    # Imported here: aoe2_ai.input sets process DPI awareness and loads pyautogui.
-    from aoe2_ai.execution import ForegroundWindowGuard, StopKeyWatcher
-    from aoe2_ai.execution.stop import disable_quick_edit, install_console_stop, restore_console_mode, start_exit_watchdog
-    from aoe2_ai.input import InputController
-
-    from .observation import LiveObserver
-
-    stop = EmergencyStop()
-    watcher = StopKeyWatcher(stop, args.stop_key)  # validates the keys before anything starts
-    console = install_console_stop(stop)  # Ctrl+C stops at once, even mid-OCR
-    guard = ForegroundWindowGuard()
-    executor = ActionExecutor(None if args.dry_run else InputController(), guard, dry_run=args.dry_run, stop=stop)
-    observer = LiveObserver(guard)
-    controller = TownCenterController(observer, executor, config)
-
-    print(
-        f"Starting in {args.delay:.0f}s - switch to the game.\n"
-        f"STOP: press {watcher.label} (works with the game in front; on laptops F-keys may need Fn),\n"
-        f"      or Ctrl+C in this window{'' if console else ' (handler not installed)'}, or slam the mouse into a screen corner."
-    )
-    quick_edit = disable_quick_edit()  # a click in the console would otherwise freeze the program
-    start_exit_watchdog(stop)  # a stop always ends the process, even if the main thread is stuck
-    with watcher:
-        if stop.wait(args.delay):
-            print(f"Stopped before starting: {stop.reason}")
-            return
-        try:
-            stats = controller.run(args.max_cycles)
-        except KeyboardInterrupt:
-            stop.trigger("Ctrl+C")
-            stats = controller.stats
-        finally:
-            observer.close()
-            restore_console_mode(quick_edit)
-    print(f"Done: {stats}. Failures: {len(controller.failures)}" + (f" (see {config.debug_dir})" if controller.failures else ""))
+    run_live(args, lambda observer, executor: TownCenterController(observer, executor, config), config.debug_dir)
 
 
 if __name__ == "__main__":
