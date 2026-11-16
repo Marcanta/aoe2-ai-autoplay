@@ -1,0 +1,12 @@
+# Capture, vision, input
+mss>=10.2
+opencv-python>=5.0
+numpy>=2.0
+pillow>=11.0
+pyautogui>=0.9.54
+
+# Perception OCR (also needs the Tesseract binary, see README)
+pytesseract>=0.3.13
+
+# Tests
+pytest>=8.0

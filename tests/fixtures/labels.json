@@ -1,0 +1,61 @@
+{
+  "_doc": "Expected values per fixture frame. A field set to null must NOT be VALID (unknown/stale). A missing field is not checked. '_ocr_misses' lists fields with a known OCR miss: they may be unknown, but if VALID they must be correct (a misread is always a failure). 'hud': false means the in-game HUD is absent. game_time is in seconds. selection: name is compared accent-insensitively with a fuzzy threshold, hp exactly. 'sequence' lists in-game frames in capture order for change tests.",
+  "frames": {
+    "dark_start_20261116_175717.png": {
+      "hud": true, "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "age": "dark", "selection": null
+    },
+    "main_menu_20261116_175453.png": {
+      "hud": false, "wood": null, "food": null, "gold": null, "stone": null, "population": null, "age": null, "game_time": null, "selection": null
+    },
+    "start_20261116_184105.png": {
+      "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 22, "age": "dark", "selection": null
+    },
+    "eco_20261116_184200.png": {
+      "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 112, "age": "dark", "selection": null
+    },
+    "eco_20261116_184221.png": {
+      "wood": 150, "food": 0, "gold": 100, "stone": 200, "population": [4, 10], "game_time": 145, "age": "dark", "selection": null
+    },
+    "eco_20261116_184242.png": {
+      "wood": 150, "food": 0, "gold": 100, "stone": 200, "population": [6, 15], "game_time": 179, "age": "dark",
+      "selection": {"name": "Cavalerie d'éclairage", "hp": [45, 45]}
+    },
+    "eco_20261116_184302.png": {
+      "_ocr_misses": ["population"],
+      "wood": 150, "food": 50, "gold": 100, "stone": 200, "population": [7, 15], "game_time": 213, "age": "dark",
+      "selection": {"name": "Bûcheron", "hp": [25, 25]}
+    },
+    "eco_20261116_184323.png": {
+      "wood": 50, "food": 77, "gold": 100, "stone": 200, "population": [8, 15], "game_time": 247, "age": "dark", "selection": null
+    },
+    "unit_selected_20261116_184841.png": {
+      "wood": 380, "food": 868, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 763, "age": "dark",
+      "selection": {"name": "Chasseur", "hp": [25, 25]}
+    },
+    "building_selected_20261116_184904.png": {
+      "wood": 410, "food": 978, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 802, "age": "dark",
+      "selection": {"name": "Chasseur", "hp": [25, 25]}
+    },
+    "feudal_20261116_185009.png": {
+      "_note": "Feudal Age research in progress (22%): top bar shows the target age name with a red progress bar.",
+      "wood": 520, "food": 703, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 907, "age": "dark",
+      "selection": {"name": "Forum", "hp": [2400, 2400]}
+    },
+    "feudal_20261116_185119.png": {
+      "wood": 630, "food": 703, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 1022, "age": "feudal",
+      "selection": {"name": "Forum", "hp": [2400, 2400]}
+    }
+  },
+  "sequence": [
+    "start_20261116_184105.png",
+    "eco_20261116_184200.png",
+    "eco_20261116_184221.png",
+    "eco_20261116_184242.png",
+    "eco_20261116_184302.png",
+    "eco_20261116_184323.png",
+    "unit_selected_20261116_184841.png",
+    "building_selected_20261116_184904.png",
+    "feudal_20261116_185009.png",
+    "feudal_20261116_185119.png"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "reference_size": [1680, 1050],
+  "regions": {
+    "hud_anchor": {"x": 10, "y": 8, "w": 30, "h": 30, "kind": "icon", "calibrated": true},
+    "wood": {"x": 42, "y": 18, "w": 52, "h": 16, "kind": "digits", "calibrated": true},
+    "food": {"x": 129, "y": 18, "w": 53, "h": 16, "kind": "digits", "calibrated": true},
+    "gold": {"x": 216, "y": 18, "w": 53, "h": 16, "kind": "digits", "calibrated": true},
+    "stone": {"x": 305, "y": 18, "w": 52, "h": 16, "kind": "digits", "calibrated": true},
+    "population": {"x": 392, "y": 18, "w": 60, "h": 16, "kind": "fraction", "calibrated": true},
+    "age": {"x": 560, "y": 13, "w": 150, "h": 24, "kind": "text", "calibrated": true},
+    "age_progress": {"x": 548, "y": 14, "w": 164, "h": 22, "kind": "bar", "calibrated": true},
+    "game_time": {"x": 741, "y": 5, "w": 63, "h": 17, "kind": "clock", "calibrated": true},
+    "selection_name": {"x": 250, "y": 907, "w": 230, "h": 19, "kind": "text", "calibrated": true, "dark_text": true},
+    "selection_hp": {"x": 250, "y": 988, "w": 66, "h": 19, "kind": "fraction", "calibrated": true, "dark_text": true}
+  }
+}
