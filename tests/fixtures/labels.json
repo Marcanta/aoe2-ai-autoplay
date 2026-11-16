@@ -1,59 +1,85 @@
 {
-  "_doc": "Expected values per fixture frame. A field set to null must NOT be VALID (unknown/stale). A missing field is not checked. '_ocr_misses' lists fields with a known OCR miss: they may be unknown, but if VALID they must be correct (a misread is always a failure). 'hud': false means the in-game HUD is absent. game_time is in seconds. selection: name is compared accent-insensitively with a fuzzy threshold, hp exactly. 'sequence' lists in-game frames in capture order for change tests.",
+  "_doc": "Expected values per fixture frame. A field set to null must NOT be VALID (unknown/stale). A missing field is not checked. '_ocr_misses' lists fields with a known OCR miss: they may be unknown, but if VALID they must be correct (a misread is always a failure). 'hud': false means the in-game HUD is absent. game_time is in seconds. selection: name is compared accent-insensitively with a fuzzy threshold, hp exactly. 'sequence' lists in-game frames in capture order for change tests. '_idle' is the idle-villager button {present, count} and '_villager' whether one villager is selected; null there means it must NOT be VALID, and 'idle_count' in '_ocr_misses' allows an unknown count.",
   "frames": {
+    "idle_one_villager_selected_20261116_204145.png": {
+      "_note": "One idle villager (button shows 1), selected with the idle hotkey. The command grid is on the build sub-page, so only the name says villager.",
+      "_ocr_misses": ["idle_count"],
+      "wood": 175, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 6, "age": "dark",
+      "selection": {"name": "Villageois", "hp": [25, 25]},
+      "_idle": {"present": true, "count": 1}, "_villager": true
+    },
+    "focus_lost_dimmed_20261116_204359.png": {
+      "_note": "Game window lost focus (a console in front): the whole game is dimmed. Nothing may be read as valid.",
+      "selection": null,
+      "_idle": {"present": null, "count": null}, "_villager": null
+    },
     "dark_start_20261116_175717.png": {
-      "hud": true, "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "age": "dark", "selection": null
+      "hud": true, "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "age": "dark", "selection": null,
+      "_idle": {"present": true, "count": 3}, "_villager": null
     },
     "main_menu_20261116_175453.png": {
-      "hud": false, "wood": null, "food": null, "gold": null, "stone": null, "population": null, "age": null, "game_time": null, "selection": null
+      "hud": false, "wood": null, "food": null, "gold": null, "stone": null, "population": null, "age": null, "game_time": null, "selection": null,
+      "_idle": {"present": null, "count": null}, "_villager": null
     },
     "start_20261116_184105.png": {
-      "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 22, "age": "dark", "selection": null
+      "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 22, "age": "dark", "selection": null,
+      "_idle": {"present": true, "count": 3}, "_villager": null
     },
     "eco_20261116_184200.png": {
-      "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 112, "age": "dark", "selection": null
+      "wood": 200, "food": 200, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 112, "age": "dark", "selection": null,
+      "_idle": {"present": true, "count": 3}, "_villager": null
     },
     "eco_20261116_184221.png": {
-      "wood": 150, "food": 0, "gold": 100, "stone": 200, "population": [4, 10], "game_time": 145, "age": "dark", "selection": null
+      "wood": 150, "food": 0, "gold": 100, "stone": 200, "population": [4, 10], "game_time": 145, "age": "dark", "selection": null,
+      "_idle": {"present": false, "count": 0}, "_villager": null
     },
     "eco_20261116_184242.png": {
       "wood": 150, "food": 0, "gold": 100, "stone": 200, "population": [6, 15], "game_time": 179, "age": "dark",
-      "selection": {"name": "Cavalerie d'éclairage", "hp": [45, 45]}
+      "selection": {"name": "Cavalerie d'éclairage", "hp": [45, 45]},
+      "_idle": {"present": false, "count": 0}, "_villager": false
     },
     "eco_20261116_184302.png": {
       "_ocr_misses": ["population"],
       "wood": 150, "food": 50, "gold": 100, "stone": 200, "population": [7, 15], "game_time": 213, "age": "dark",
-      "selection": {"name": "Bûcheron", "hp": [25, 25]}
+      "selection": {"name": "Bûcheron", "hp": [25, 25]},
+      "_idle": {"present": false, "count": 0}, "_villager": true
     },
     "eco_20261116_184323.png": {
-      "wood": 50, "food": 77, "gold": 100, "stone": 200, "population": [8, 15], "game_time": 247, "age": "dark", "selection": null
+      "wood": 50, "food": 77, "gold": 100, "stone": 200, "population": [8, 15], "game_time": 247, "age": "dark", "selection": null,
+      "_idle": {"present": false, "count": 0}, "_villager": null
     },
     "unit_selected_20261116_184841.png": {
       "wood": 380, "food": 868, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 763, "age": "dark",
-      "selection": {"name": "Chasseur", "hp": [25, 25]}
+      "selection": {"name": "Chasseur", "hp": [25, 25]},
+      "_idle": {"present": true, "count": 8}, "_villager": true
     },
     "building_selected_20261116_184904.png": {
       "wood": 410, "food": 978, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 802, "age": "dark",
-      "selection": {"name": "Chasseur", "hp": [25, 25]}
+      "selection": {"name": "Chasseur", "hp": [25, 25]},
+      "_idle": {"present": true, "count": 8}, "_villager": true
     },
     "feudal_20261116_185009.png": {
       "_note": "Feudal Age research in progress (22%): top bar shows the target age name with a red progress bar.",
       "wood": 520, "food": 703, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 907, "age": "dark",
-      "selection": {"name": "Forum", "hp": [2400, 2400]}
+      "selection": {"name": "Forum", "hp": [2400, 2400]},
+      "_idle": {"present": true, "count": 18}, "_villager": false
     },
     "feudal_20261116_185119.png": {
       "wood": 630, "food": 703, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 1022, "age": "feudal",
-      "selection": {"name": "Forum", "hp": [2400, 2400]}
+      "selection": {"name": "Forum", "hp": [2400, 2400]},
+      "_idle": {"present": true, "count": 18}, "_villager": false
     },
     "eco_20261116_203933.png": {
       "_note": "Several villagers selected (multi-selection panel, no single name), housed 5/5.",
-      "wood": 175, "food": 150, "gold": 100, "stone": 200, "population": [5, 5], "game_time": 534, "age": "dark", "selection": null
+      "wood": 175, "food": 150, "gold": 100, "stone": 200, "population": [5, 5], "game_time": 534, "age": "dark", "selection": null,
+      "_idle": {"present": true, "count": 2}, "_villager": null
     },
     "tc_villager_20261116_203424.png": {
       "_note": "Town Center training a villager (Creation 61%), new game. Population is yellow (one slot left).",
       "_ocr_misses": ["population"],
       "wood": 200, "food": 150, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 30, "age": "dark",
-      "selection": {"name": "Forum", "hp": [2400, 2400]}
+      "selection": {"name": "Forum", "hp": [2400, 2400]},
+      "_idle": {"present": true, "count": 3}, "_villager": false
     }
   },
   "sequence": [

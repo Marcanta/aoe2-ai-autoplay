@@ -105,3 +105,43 @@ class MockInput:
 
     def presses(self, key: str) -> int:
         return sum(1 for e in self.events if e == ("press", key))
+
+
+# --- idle villager builders -------------------------------------------------------
+import numpy as np  # noqa: E402
+
+from aoe2_ai.perception.villager import IdleVillagerState, VillagerFingerprint, VillagerSelectionState  # noqa: E402
+
+
+def view(seed: int) -> np.ndarray:
+    """A distinct, normalised view signature per seed (a different spot on the map)."""
+    v = np.random.default_rng(seed).normal(size=32 * 28).astype(np.float32)
+    v -= v.mean()
+    return v / np.linalg.norm(v)
+
+
+def fp(seed: int, role: str = "villageois", hp=(25, 25), with_view: bool = True) -> VillagerFingerprint:
+    return VillagerFingerprint(role, hp[0], hp[1], view(seed) if with_view else None)
+
+
+def make_idle_obs(*, present=True, count=_U, villager=None, game=True, ts=0.0) -> Observation:
+    """Observation for the idle-villager controller.
+
+    ``present``: True / False / None (unknown button). ``count``: int, None (unread), default
+    3 when present and 0 when not. ``villager``: a fingerprint (that villager selected),
+    False (something else selected), None (selection unknown).
+    """
+    base = make_obs(game=game, selected=False, ts=ts)
+    if not game or present is None:
+        idle = IdleVillagerState.unknown(ts, "idle button unclear")
+    else:
+        if count is _U:
+            count = 3 if present else 0
+        idle = IdleVillagerState(ts, det(present, ts), det(count, ts) if count is not None else Detection.unknown(ts, "count unreadable"))
+    if not game or villager is None:
+        sel = VillagerSelectionState.unknown(ts, "selection unknown")
+    elif villager is False:
+        sel = VillagerSelectionState(ts, det(False, ts))
+    else:
+        sel = VillagerSelectionState(ts, Detection.valid(True, 0.95, ts, villager.role), villager)
+    return replace(base, idle=idle, villager=sel)

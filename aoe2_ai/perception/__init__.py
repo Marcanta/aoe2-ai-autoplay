@@ -16,9 +16,11 @@ from .game_state import Age, Detection, GameState, Population, Selection, StateT
 from .pipeline import Perception, PerceptionResult
 from .regions import Region, RegionSet
 from .town_center import QueueStatus, TownCenterDetector, TownCenterState
+from .villager import IdleVillagerState, VillagerDetector, VillagerFingerprint, VillagerSelectionState
 
 __all__ = [
-    "Age", "Detection", "Frame", "GameState", "LiveSource", "Perception", "PerceptionResult",
+    "Age", "Detection", "Frame", "GameState", "IdleVillagerState", "LiveSource", "Perception", "PerceptionResult",
     "Population", "QueueStatus", "Region", "RegionSet", "Selection", "StateTracker", "Status",
-    "TownCenterDetector", "TownCenterState", "load_frame",
+    "TownCenterDetector", "TownCenterState", "VillagerDetector", "VillagerFingerprint",
+    "VillagerSelectionState", "load_frame",
 ]
