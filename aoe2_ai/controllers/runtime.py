@@ -8,6 +8,7 @@ foreground-window guard, and a single :class:`ActionExecutor` for all input.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 from typing import Any, Callable, Protocol
 
@@ -30,6 +31,7 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
                         "check yours with: python -m aoe2_ai.execution --check")
     parser.add_argument("--max-cycles", type=int, help="stop after this many cycles")
     parser.add_argument("--delay", type=float, default=5.0, help="seconds before starting (to switch to the game)")
+    parser.add_argument("--metrics", metavar="DIR", help="record observation latency, cycle outcomes and before/after frames of every action to DIR")
     parser.add_argument("-v", "--verbose", action="store_true")
 
 
@@ -60,6 +62,12 @@ def run_live(
     executor = ActionExecutor(None if args.dry_run else InputController(), guard, dry_run=args.dry_run, stop=stop)
     observer = LiveObserver(guard, profile=profile)
     controller = make_controller(observer, executor)
+    metrics = None
+    if getattr(args, "metrics", None):
+        from .metrics import LiveMetrics
+
+        metrics = LiveMetrics(args.metrics)
+        metrics.attach(observer, controller)
 
     print(
         f"Starting in {args.delay:.0f}s - switch to the game.\n"
@@ -80,4 +88,7 @@ def run_live(
         finally:
             observer.close()
             restore_console_mode(quick_edit)
+            if metrics is not None:
+                summary = metrics.close()
+                print(f"Metrics ({args.metrics}): {json.dumps(summary)}")
     print(f"Done: {stats}. Failures: {len(controller.failures)}" + (f" (see {debug_dir})" if controller.failures else ""))

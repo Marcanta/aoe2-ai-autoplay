@@ -99,6 +99,29 @@ The full table (every profile × cache × scenario) is in `after.json`.
   (2509 ms). The difference is run-to-run noise (Tesseract process start-up
   varies with system load), so compare configurations measured in the same run.
 
+### Live run (2026-11-16, Dark Age skirmish start, 90 cycles per controller)
+
+Recorded with `--metrics DIR` (see `aoe2_ai/controllers/metrics.py`). Every key
+press was checked by eye on its before/after frames.
+
+| controller | profile | obs. in game | mean | median | p95 | launches / obs | actions | failed | duplicates | incorrect |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Town Center | `TOWN_CENTER` + cache | 66 | 132 ms | 43 ms | 681 ms | 0.30 | 2 TC selections, 1 villager trained | 0 | — | 0 |
+| Idle villager | `IDLE_VILLAGER` + cache | 80 | 112 ms | 42 ms | 1049 ms | 0.28 | 4 villagers selected | 0 | 0 | 0 |
+
+* Most observations reuse every OCR result (~42 ms, mostly the screen grab). The
+  p95 is set by the observations where a read region changed, e.g. a new
+  selection (name + HP) or food after training. Those cost 1–6 launches (0.3–1.3 s).
+* Town Center: it selected the TC when nothing was selected (twice), trained
+  one villager when the queue was idle with food 200 and pop 4/5 (food → 150,
+  queue "Création 5% Villageois"), then waited while housed (5/5).
+* Idle villager: the 4 idle villagers (the 3 starting ones and the one just
+  trained) were each selected once, at 4 different positions. The controller then
+  stopped pressing ("4/4 visited") until the end of the run, so there were no
+  duplicate selections.
+* This sample is small: the start position allows one villager before housing,
+  and has 4 idle villagers. Longer runs (houses, more villagers) are still to do.
+
 ## Perception profiles
 
 `aoe2_ai.perception.profile`:
