@@ -41,6 +41,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from .cache import RegionCache, cached
 from .detectors import ANCHOR_DIR, _normalize
 from .game_state import Detection, Selection, Status
 from .ocr import OcrEngine
@@ -255,7 +256,9 @@ class VillagerDetector:
 
     # idle button --------------------------------------------------------------
     def idle(self, frame: np.ndarray, regions: RegionSet, timestamp: float | None = None,
-             ocr: OcrEngine | None = None, min_confidence: float = 0.6) -> IdleVillagerState:
+             ocr: OcrEngine | None = None, min_confidence: float = 0.6, cache: RegionCache | None = None) -> IdleVillagerState:
+        """With ``cache``, the count is reused while the pixels of ``idle_count`` are unchanged
+        (the colour check always runs)."""
         ts = time.time() if timestamp is None else timestamp
         if "idle_icon" not in regions or not regions["idle_icon"].calibrated:
             return IdleVillagerState.unknown(ts, "idle_icon region not configured")
@@ -273,17 +276,24 @@ class VillagerDetector:
 
         count: Detection[int] = Detection.unknown(ts, "count not read")
         if ocr is not None and "idle_count" in regions and regions["idle_count"].calibrated:
-            crop = white_only(regions["idle_count"].crop(frame))
-            read = ocr.read(crop, whitelist="0123456789", dark=regions["idle_count"].dark_text) if crop.size else None
-            if read is not None and not read.empty and read.confidence >= min_confidence:
-                value = parse_idle_count(read.text)
-                if value is not None and value >= 1:
-                    count = Detection.valid(value, read.confidence, ts, read.text)
-                else:  # "0" on a yellow button, or garbage: contradicts the colour
-                    count = Detection.unknown(ts, f"count {read.text!r} inconsistent with yellow button", read.confidence)
-            elif read is not None:
-                count = Detection.unknown(ts, read.text or "count unreadable", read.confidence)
+            raw = regions["idle_count"].crop(frame)
+            count = cached(cache, "idle_count", (raw,), (min_confidence,),
+                           lambda: self._count(raw, regions["idle_count"].dark_text, ocr, ts, min_confidence, count))
         return IdleVillagerState(ts, present, count, scores)
+
+    @staticmethod
+    def _count(raw: np.ndarray, dark: bool, ocr: OcrEngine, ts: float, min_confidence: float, default: Detection[int]) -> Detection[int]:
+        crop = white_only(raw)
+        read = ocr.read(crop, whitelist="0123456789", dark=dark) if crop.size else None
+        if read is not None and not read.empty and read.confidence >= min_confidence:
+            value = parse_idle_count(read.text)
+            if value is not None and value >= 1:
+                return Detection.valid(value, read.confidence, ts, read.text)
+            # "0" on a yellow button, or garbage: contradicts the colour
+            return Detection.unknown(ts, f"count {read.text!r} inconsistent with yellow button", read.confidence)
+        if read is not None:
+            return Detection.unknown(ts, read.text or "count unreadable", read.confidence)
+        return default
 
     # selection ---------------------------------------------------------------
     def build_button_score(self, frame: np.ndarray, regions: RegionSet) -> float:

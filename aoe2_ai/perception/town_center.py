@@ -36,6 +36,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from .cache import RegionCache, cached
 from .detectors import ANCHOR_DIR, _normalize
 from .game_state import Detection, Selection, Status
 from .ocr import OcrEngine
@@ -247,8 +248,12 @@ class TownCenterDetector:
         timestamp: float | None = None,
         ocr: OcrEngine | None = None,
         min_confidence: float = 0.6,
+        cache: RegionCache | None = None,
     ) -> TownCenterState:
-        """``regions`` must already be scaled to ``frame``. ``ocr`` is optional (progress / item text)."""
+        """``regions`` must already be scaled to ``frame``. ``ocr`` is optional (progress / item text).
+
+        With ``cache``, the progress and item lines are reused while their pixels are unchanged.
+        """
         ts = time.time() if timestamp is None else timestamp
         selected = self.selected(selection, ts)
         if not (selected.is_valid and selected.value):
@@ -263,15 +268,29 @@ class TownCenterDetector:
         progress: Detection[int] = Detection.unknown(ts, "not producing")
         item: Detection[str] = Detection.unknown(ts, "not producing")
         if queue.is_valid and queue.value is QueueStatus.PRODUCING and ocr is not None:
-            p = self._ocr_line(frame, regions, ocr, "tc_queue_progress")
-            if p is not None and not p.empty and p.confidence >= min_confidence and parse_percent(p.text) is not None:
-                progress = Detection.valid(parse_percent(p.text), p.confidence, ts, p.text)
-            elif p is not None:
-                progress = Detection.unknown(ts, p.text, p.confidence)
-            n = self._ocr_line(frame, regions, ocr, "tc_queue_item")
-            if n is not None and not n.empty and n.confidence >= min_confidence:
-                ratio = fuzzy_name_match(n.text, self.villager_names, min_ratio=0.75)
-                item = Detection.valid("villager" if ratio else n.text, n.confidence * (ratio or 1.0), ts, n.text)
-            elif n is not None:
-                item = Detection.unknown(ts, n.text, n.confidence)
+            progress = cached(cache, "tc_progress", self._crops(frame, regions, "tc_queue_progress"), (min_confidence,),
+                              lambda: self._progress(frame, regions, ocr, ts, min_confidence, progress))
+            item = cached(cache, "tc_item", self._crops(frame, regions, "tc_queue_item"), (min_confidence, self.villager_names),
+                          lambda: self._item(frame, regions, ocr, ts, min_confidence, item))
         return TownCenterState(ts, selected, queue, villager, progress, item, scores)
+
+    @staticmethod
+    def _crops(frame: np.ndarray, regions: RegionSet, name: str) -> tuple[np.ndarray, ...]:
+        return (regions[name].crop(frame),) if name in regions else ()
+
+    def _progress(self, frame, regions, ocr, ts, min_confidence, default: Detection[int]) -> Detection[int]:
+        p = self._ocr_line(frame, regions, ocr, "tc_queue_progress")
+        if p is not None and not p.empty and p.confidence >= min_confidence and parse_percent(p.text) is not None:
+            return Detection.valid(parse_percent(p.text), p.confidence, ts, p.text)
+        if p is not None:
+            return Detection.unknown(ts, p.text, p.confidence)
+        return default
+
+    def _item(self, frame, regions, ocr, ts, min_confidence, default: Detection[str]) -> Detection[str]:
+        n = self._ocr_line(frame, regions, ocr, "tc_queue_item")
+        if n is not None and not n.empty and n.confidence >= min_confidence:
+            ratio = fuzzy_name_match(n.text, self.villager_names, min_ratio=0.75)
+            return Detection.valid("villager" if ratio else n.text, n.confidence * (ratio or 1.0), ts, n.text)
+        if n is not None:
+            return Detection.unknown(ts, n.text, n.confidence)
+        return default

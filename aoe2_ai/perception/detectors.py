@@ -140,6 +140,12 @@ class Detector:
 
     field: str = ""
 
+    @property
+    def cache_regions(self) -> tuple[str, ...] | None:
+        """Regions whose pixels fully determine :meth:`detect`'s result (for the region
+        cache), or None when the result may depend on anything else (never cached)."""
+        return None
+
     def detect(self, ctx: DetectorContext) -> tuple[Detection, list[RegionReading]]:
         raise NotImplementedError
 
@@ -168,6 +174,10 @@ class _ParsedDetector(Detector):
 
     region: str = ""
     whitelist: str | None = None
+
+    @property
+    def cache_regions(self) -> tuple[str, ...]:
+        return (self.region,)
 
     def parse(self, text: str):  # -> value | None
         raise NotImplementedError
@@ -232,6 +242,7 @@ class AgeDetector(Detector):
 
     field = "age"
     research_threshold = 0.03  # red share of the age_progress region
+    cache_regions = ("age", "age_progress")
 
     def detect(self, ctx: DetectorContext) -> tuple[Detection, list[RegionReading]]:
         reading, problem = self._read(ctx, "age", None)
@@ -261,6 +272,7 @@ class SelectionDetector(Detector):
     """Name (and HP if readable) of the selected unit/building. Minimal for now."""
 
     field = "selection"
+    cache_regions = ("selection_name", "selection_hp")
 
     def detect(self, ctx: DetectorContext) -> tuple[Detection, list[RegionReading]]:
         name_reading, problem = self._read(ctx, "selection_name", None)

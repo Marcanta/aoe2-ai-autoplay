@@ -12,6 +12,7 @@ import logging
 from typing import Any, Callable, Protocol
 
 from aoe2_ai.execution import ActionExecutor, EmergencyStop
+from aoe2_ai.perception.profile import FULL, PerceptionProfile
 
 from .observation import LiveObserver
 
@@ -37,8 +38,16 @@ def setup_logging(verbose: bool) -> None:
     logging.getLogger("pytesseract").setLevel(logging.INFO)  # one debug line per OCR call drowns -v output
 
 
-def run_live(args: argparse.Namespace, make_controller: Callable[[LiveObserver, ActionExecutor], RunnableController], debug_dir: str) -> None:
-    """Build the safety net, run the controller until stop / halt / ``--max-cycles``, clean up."""
+def run_live(
+    args: argparse.Namespace,
+    make_controller: Callable[[LiveObserver, ActionExecutor], RunnableController],
+    debug_dir: str,
+    profile: PerceptionProfile = FULL,
+) -> None:
+    """Build the safety net, run the controller until stop / halt / ``--max-cycles``, clean up.
+
+    ``profile``: the fields the controller reads; the observer computes only those.
+    """
     # Imported here: aoe2_ai.input sets process DPI awareness and loads pyautogui.
     from aoe2_ai.execution import ForegroundWindowGuard, StopKeyWatcher
     from aoe2_ai.execution.stop import disable_quick_edit, install_console_stop, restore_console_mode, start_exit_watchdog
@@ -49,7 +58,7 @@ def run_live(args: argparse.Namespace, make_controller: Callable[[LiveObserver, 
     console = install_console_stop(stop)  # Ctrl+C stops at once, even mid-OCR
     guard = ForegroundWindowGuard()
     executor = ActionExecutor(None if args.dry_run else InputController(), guard, dry_run=args.dry_run, stop=stop)
-    observer = LiveObserver(guard)
+    observer = LiveObserver(guard, profile=profile)
     controller = make_controller(observer, executor)
 
     print(
