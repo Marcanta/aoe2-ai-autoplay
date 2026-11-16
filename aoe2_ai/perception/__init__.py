@@ -15,8 +15,10 @@ from .capture import Frame, LiveSource, load_frame
 from .game_state import Age, Detection, GameState, Population, Selection, StateTracker, Status
 from .pipeline import Perception, PerceptionResult
 from .regions import Region, RegionSet
+from .town_center import QueueStatus, TownCenterDetector, TownCenterState
 
 __all__ = [
     "Age", "Detection", "Frame", "GameState", "LiveSource", "Perception", "PerceptionResult",
-    "Population", "Region", "RegionSet", "Selection", "StateTracker", "Status", "load_frame",
+    "Population", "QueueStatus", "Region", "RegionSet", "Selection", "StateTracker", "Status",
+    "TownCenterDetector", "TownCenterState", "load_frame",
 ]

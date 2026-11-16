@@ -102,15 +102,28 @@ Notes:
 - One frame takes about 2 s, mostly Tesseract process start-up on Windows.
 - Regions were measured at 1680x1050. Other 16:10 resolutions scale automatically; other aspect ratios need recalibrating (`--calibrate`).
 
+## Town Center controller
+
+`aoe2_ai/controllers/town_center.py` keeps the Town Center producing villagers, with no LLM: observe → decide → press the hotkey → verify on screen that the queue started → repeat. All input goes through `aoe2_ai/execution/` (`ActionExecutor`), which only sends keys when the game is the foreground window, logs every action, and refuses a second training command until the first one is verified.
+
+```powershell
+python -m aoe2_ai.controllers --dry-run -v   # decide and log, send nothing
+python -m aoe2_ai.controllers                 # live; F12 = emergency stop
+```
+
+Details, safety rules and the perception investigation: [docs/town_center_controller.md](docs/town_center_controller.md).
+
 ## Safety
 
-`pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled.
+`pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled. The Town Center controller also stops on **F12** (`--stop-key`) and never sends input unless Age of Empires II is the foreground window.
 
 ## Roadmap
 
 - [ ] Reliable game-window capture and resolution handling
 - [x] Read resources, population, game time, age and selected object from the HUD (`aoe2_ai/perception`)
 - [ ] Idle villagers; faster OCR
+- [x] Town Center: queue idle/producing, villager button (`aoe2_ai/perception/town_center.py`)
+- [x] Safe action execution and a deterministic villager-production controller
 - [ ] Action schema (build, train, gather, attack, scout) with pydantic
 - [ ] LLM decision loop with rate limiting
 - [ ] Opening build orders (e.g. scouts / archers)
