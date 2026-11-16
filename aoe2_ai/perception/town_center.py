@@ -198,16 +198,20 @@ class TownCenterDetector:
 
     # queue --------------------------------------------------------------------
     def queue(self, frame: np.ndarray, regions: RegionSet, timestamp: float) -> tuple[Detection[QueueStatus], dict[str, float]]:
-        needed = ("tc_queue_area", "tc_queue_bar", "tc_queue_context")
+        needed = ("tc_queue_area", "tc_queue_bar", "tc_queue_context", "tc_queue_context_top")
         if any(n not in regions or not regions[n].calibrated for n in needed):
             return Detection.unknown(timestamp, "queue regions not configured"), {}
         bar = progress_bar_fill(regions["tc_queue_bar"].crop(frame))
         empty = template_score(frame, regions["tc_queue_area"], self.empty_template)
-        context = parchment_fraction(regions["tc_queue_context"].crop(frame))
-        scores = {"bar_fill": bar, "empty_score": empty, "context": context}
+        # Parchment strips above the queue icon and under the bar: at least one must show the
+        # selection panel. Without it (menu, loading screen, covered panel) the bar test would see
+        # any dark area as a track. Two strips, so that one partly covered (e.g. by queued-item
+        # icons under the bar) does not hide the queue.
+        below = parchment_fraction(regions["tc_queue_context"].crop(frame))
+        above = parchment_fraction(regions["tc_queue_context_top"].crop(frame))
+        context = max(below, above)
+        scores = {"bar_fill": bar, "empty_score": empty, "context": context, "context_below": below, "context_above": above}
         if context < self.context_min:
-            # The strip under the bar is always parchment on the selection panel. Without it
-            # (menu, loading screen, covered panel) the bar test would see any dark area as a track.
             return Detection.unknown(timestamp, f"selection panel not visible (context {context:.2f})", context), scores
         if bar >= self.bar_producing:
             return Detection.valid(QueueStatus.PRODUCING, bar, timestamp, f"progress bar {bar:.2f}"), scores

@@ -108,14 +108,15 @@ Notes:
 
 ```powershell
 python -m aoe2_ai.controllers --dry-run -v   # decide and log, send nothing
-python -m aoe2_ai.controllers                 # live; F12 = emergency stop
+python -m aoe2_ai.controllers                 # live; F12 / Pause / Ctrl+C = emergency stop
+python -m aoe2_ai.execution --check          # see which keys your keyboard sends (laptop F-keys may need Fn)
 ```
 
 Details, safety rules and the perception investigation: [docs/town_center_controller.md](docs/town_center_controller.md).
 
 ## Safety
 
-`pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled. The Town Center controller also stops on **F12** (`--stop-key`) and never sends input unless Age of Empires II is the foreground window.
+`pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled. The Town Center controller also stops on **F12** or **Pause** (`--stop-key`) and Ctrl+C, and never sends input unless Age of Empires II is the foreground window.
 
 ## Roadmap
 

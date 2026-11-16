@@ -44,6 +44,16 @@
     "feudal_20261116_185119.png": {
       "wood": 630, "food": 703, "gold": 100, "stone": 200, "population": [22, 25], "game_time": 1022, "age": "feudal",
       "selection": {"name": "Forum", "hp": [2400, 2400]}
+    },
+    "eco_20261116_203933.png": {
+      "_note": "Several villagers selected (multi-selection panel, no single name), housed 5/5.",
+      "wood": 175, "food": 150, "gold": 100, "stone": 200, "population": [5, 5], "game_time": 534, "age": "dark", "selection": null
+    },
+    "tc_villager_20261116_203424.png": {
+      "_note": "Town Center training a villager (Creation 61%), new game. Population is yellow (one slot left).",
+      "_ocr_misses": ["population"],
+      "wood": 200, "food": 150, "gold": 100, "stone": 200, "population": [4, 5], "game_time": 30, "age": "dark",
+      "selection": {"name": "Forum", "hp": [2400, 2400]}
     }
   },
   "sequence": [

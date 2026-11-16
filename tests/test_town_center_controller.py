@@ -23,7 +23,7 @@ from controller_helpers import IDLE, PRODUCING, FakeClock, MockInput, ScriptedOb
 
 import numpy as np
 
-CFG = TownCenterConfig(debug_dir="")
+CFG = TownCenterConfig(debug_dir="", min_in_game_observations=1)  # settling tested separately
 
 
 # --- decide(): unit tests ------------------------------------------------------
@@ -249,3 +249,50 @@ def test_config_from_json(tmp_path):
     p.write_text('{"typo": 1}')
     with pytest.raises(ValueError):
         TownCenterConfig.from_json(p)
+
+
+def test_uncertain_reselects_when_nothing_selected():
+    ctrl, inp, _, _ = make_controller(make_obs(**IDLE), make_obs(queue=None), make_obs(selected=None))
+    assert ctrl.cycle().outcome is Outcome.UNCERTAIN  # verification never conclusive
+    inp.events.clear()
+    r = ctrl.cycle()
+    assert r.outcome is Outcome.UNCERTAIN and "re-selecting" in r.detail
+    assert inp.events == [("press", "h")]  # select only, never train
+
+
+def test_error_caused_by_stop_is_not_a_failure():
+    class Boom:
+        def __init__(self, stop):
+            self.stop = stop
+
+        def observe(self):
+            self.stop.trigger("Ctrl+C")  # Ctrl+C also kills the Tesseract children
+            raise RuntimeError("TesseractError(3221225786)")
+
+    ctrl, _, _, _ = make_controller(make_obs(**IDLE))
+    ctrl.observer = Boom(ctrl.stop)
+    stats = ctrl.run(max_cycles=5)
+    assert stats.failures == 0 and ctrl.state is ControllerState.STOPPED and stats.cycles == 1
+
+
+def test_unreadable_queue_with_tc_selected_is_captured_rate_limited(tmp_path):
+    frame = Frame(np.zeros((10, 10, 3), np.uint8), 0.0, "test")
+    obs = replace(make_obs(queue=None), frame=frame)
+    ctrl, inp, _, clock = make_controller(obs, recorder=DebugRecorder(tmp_path))
+    for _ in range(3):
+        assert ctrl.cycle().outcome is Outcome.WAITED
+    assert len(list(tmp_path.glob("*queue_unknown*.png"))) == 1 and not ctrl.failures
+    clock.now += CFG.unknown_capture_interval
+    ctrl.cycle()
+    assert len(list(tmp_path.glob("*queue_unknown*.png"))) == 2 and inp.events == []
+
+
+def test_waits_for_game_to_settle_before_any_key():
+    # Game just loaded / window just came back: first in-game observation sends nothing.
+    config = replace(CFG, min_in_game_observations=2)
+    ctrl, inp, _, _ = make_controller(make_obs(game=False), make_obs(selected=False), make_obs(selected=False), make_obs(**PRODUCING), config=config)
+    assert ctrl.cycle().outcome is Outcome.WAITED  # not in game
+    r = ctrl.cycle()
+    assert r.outcome is Outcome.WAITED and "settle" in r.detail and inp.events == []
+    assert ctrl.cycle().outcome is Outcome.SELECTED  # second consecutive in-game observation
+    assert inp.events == [("press", "h")]

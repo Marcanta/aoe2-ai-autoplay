@@ -116,3 +116,33 @@ def test_end_to_end_decision_on_fixture(path, expected, detector):
             assert tc.progress.value == 22
     finally:
         perception.close()
+
+
+VILLAGER_FRAME = FRAMES / "tc_villager_20261116_203424.png"  # TC training a villager, 61%
+
+
+def test_villager_in_production(detector):
+    img = load_frame(VILLAGER_FRAME).image
+    tc = detector.detect(img, regions_for(img), FORUM, 1.0)
+    assert tc.is_producing and tc.villager_available.value is True
+
+
+def test_queue_still_read_when_strip_under_bar_is_covered(detector):
+    img = load_frame(VILLAGER_FRAME).image.copy()
+    r = regions_for(img)["tc_queue_context"]
+    img[r.y : r.y + r.h, r.x : r.x + r.w // 2] = (40, 40, 40)  # e.g. queued-item icons under the bar
+    q, scores = detector.queue(img, regions_for(img), 1.0)
+    assert q.value is QueueStatus.PRODUCING and scores["context_below"] < 0.8
+
+
+@requires_tesseract
+def test_villager_progress_and_item_ocr(detector):
+    perception = Perception()
+    try:
+        frame = load_frame(VILLAGER_FRAME, 1.0)
+        result = perception.analyze(frame)
+        tc = detector.detect(frame.image, result.regions, result.observed.selection, 1.0, perception.ocr)
+        assert tc.is_selected and tc.progress.value == 61 and tc.current_item.value == "villager"
+        assert decide(Observation(1.0, True, "fixture", result.state, tc, frame)).kind is DecisionKind.WAIT
+    finally:
+        perception.close()

@@ -1,6 +1,7 @@
 """ActionExecutor gates: game detection, dry run, duplicate prevention, cooldown, input failures, stop."""
 
 import logging
+import time
 
 import pytest
 
@@ -16,7 +17,7 @@ from aoe2_ai.execution import (
     StaticGuard,
 )
 from aoe2_ai.execution.guard import ForegroundWindow
-from aoe2_ai.execution.stop import vk_code
+from aoe2_ai.execution.stop import StopKeyWatcher, console_handler, parse_keys, start_exit_watchdog, vk_code
 
 from controller_helpers import FakeClock, MockInput
 
@@ -163,3 +164,57 @@ def test_stop_key_codes():
     assert vk_code("f12") == 0x7B and vk_code("pause") == 0x13 and vk_code("x") == ord("X")
     with pytest.raises(ValueError):
         vk_code("ctrl+x")
+    assert parse_keys("F12, pause") == ("f12", "pause")
+    with pytest.raises(ValueError):
+        parse_keys(" , ")
+
+
+class FakeKeys:
+    """Scripted GetAsyncKeyState: ``down`` is the set of VKs currently held."""
+
+    def __init__(self, fail: Exception | None = None) -> None:
+        self.down: set[int] = set()
+        self.fail = fail
+
+    def __call__(self, vk: int) -> int:
+        if self.fail:
+            raise self.fail
+        return -32768 if vk in self.down else 0
+
+
+def wait_until(cond, timeout=2.0):
+    end = time.monotonic() + timeout
+    while not cond() and time.monotonic() < end:
+        time.sleep(0.01)
+    return cond()
+
+
+def test_stop_key_watcher_any_of_several_keys():
+    stop, keys = EmergencyStop(), FakeKeys()
+    with StopKeyWatcher(stop, "f12,pause", poll=0.005, key_state=keys) as w:
+        assert w.alive and not stop.triggered
+        keys.down.add(0x13)  # Pause
+        assert wait_until(lambda: stop.triggered)
+    assert "PAUSE" in stop.reason
+
+
+def test_stop_key_watcher_failure_triggers_stop():
+    stop = EmergencyStop()
+    with StopKeyWatcher(stop, "f12", poll=0.005, key_state=FakeKeys(fail=OSError("no access"))):
+        assert wait_until(lambda: stop.triggered)
+    assert "watcher failed" in stop.reason
+
+
+def test_console_ctrl_c_triggers_stop():
+    stop = EmergencyStop()
+    assert console_handler(stop)(0) is True
+    assert stop.triggered and stop.reason == "Ctrl+C"
+
+
+def test_exit_watchdog_forces_exit_after_grace():
+    stop, codes = EmergencyStop(), []
+    start_exit_watchdog(stop, grace=0.01, exit=codes.append)
+    time.sleep(0.05)
+    assert codes == []  # nothing happens before a stop
+    stop.trigger("F12")
+    assert wait_until(lambda: codes == [2])

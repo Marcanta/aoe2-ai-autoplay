@@ -21,7 +21,22 @@ python -m aoe2_ai.controllers                 # live
 ```
 
 3. Switch to the game within 5 seconds (`--delay`).
-4. **Stop**: press **F12** (`--stop-key`), or slam the mouse into a screen corner (pyautogui fail-safe), or Ctrl+C.
+4. **Stop**, any of:
+   - **F12** or **Pause**, with the game in front (`--stop-key f12,pause`; any key from `python -m aoe2_ai.execution --check`);
+   - **Ctrl+C** in the controller's console (handled by an OS console handler, so it works even mid-OCR);
+   - slam the mouse into a screen corner (pyautogui fail-safe).
+
+   Whatever triggers it, no input is sent afterwards, and if the program has not exited 5 s later it is
+   force-closed. If the stop-key watcher itself fails, that also counts as a stop.
+
+### If the stop key does nothing
+
+- **Laptop F-keys** often send media keys unless **Fn** is held. Run `python -m aoe2_ai.execution --check`
+  and press your key: it prints what Windows receives. Then use `--stop-key` with a key that shows up.
+- **Ctrl+C goes to the window in front.** With the game focused, Ctrl+C goes to the game; switch to the
+  console first, or use the stop key.
+- **PowerShell QuickEdit**: clicking into the console starts a text selection, which turns Ctrl+C into
+  "copy" and pauses the program. The controller now turns QuickEdit off while it runs and restores it after.
 
 The controller presses **H** whenever the Town Center is not selected (at most every 2 s), which also
 moves the camera. Do not play the same game by hand at the same time.
@@ -83,7 +98,7 @@ Every `execute()` passes these gates, in order, and every attempt is logged (`ao
    title when the process can't be read), checked again after `pre_delay`.
 
 `dry_run=True` runs every gate but sends nothing. An input exception returns `FAILED` (uncertain);
-pyautogui's corner fail-safe also triggers the emergency stop.
+pyautogui's corner fail-safe also triggers the emergency stop (`aoe2_ai/execution/stop.py`).
 
 ## Perception: Town Center panel
 
@@ -92,20 +107,20 @@ All regions are in `regions_1680x1050.json` (`tc_*`) and scale like the HUD regi
 | Field | How | Evidence needed |
 |---|---|---|
 | `selected` | existing selection-name OCR, fuzzy match to TC names in several languages | name read this frame (not the stale tracked one) |
-| `queue` | **pixel classification**: progress bar (red fill + dark track) → producing; parchment matching `anchors/tc_queue_empty.png` → idle | parchment strip under the bar must be visible, else UNKNOWN |
+| `queue` | **pixel classification**: progress bar (red fill + dark track) → producing; parchment matching `anchors/tc_queue_empty.png` → idle | a parchment strip above the icon or under the bar must be visible, else UNKNOWN |
 | `villager_available` | **template match** of `anchors/villager_button.png` in the command grid | score ≥ 0.8, else UNKNOWN (never "false" from a miss) |
 | `progress`, `current_item` | OCR of the two text lines next to the queue icon, only while producing | informational only, not used to decide |
 
 ### Template / pixel matching vs OCR (investigation)
 
-Measured on the 12 fixture frames (two have the Town Center selected: one researching Feudal Age, one idle):
+Measured on the 13 fixture frames (three have the Town Center selected: researching Feudal Age, training a villager, idle):
 
 | Signal | Producing frame | Idle frame | Other frames | Cost |
 |---|---|---|---|---|
-| Progress-bar fill | 0.99 | 0.00 | 0.00 (main menu: 0.85, rejected by the parchment check) | < 2 ms |
+| Progress-bar fill | 0.99 (research and villager) | 0.00 | 0.00 (main menu: 0.85, rejected by the parchment check) | < 2 ms |
 | Empty-queue template | 0.16 | 1.00 | 1.00 on unit panels (hence the TC-selected gate) | (same) |
 | Villager button template | 1.00 | 1.00 | ≤ 0.46 | (same) |
-| OCR of progress line | `Développement 22%` → 22 | — | — | ~100–200 ms per Tesseract launch |
+| OCR of progress / item lines | `Développement 22%` → 22; `Création 61%` → 61, `Villageois` → villager | — | — | ~100–200 ms per Tesseract launch |
 
 Conclusions:
 
@@ -120,10 +135,17 @@ Conclusions:
 
 ### Known limits
 
-- No fixture yet shows a Town Center **training a villager** (only age research). Production is detected
-  from the progress bar, which is the same widget, so it should hold; `current_item` = `villager` relies on
-  OCR of the item name and is not used for decisions. Grab a frame with
-  `python -m aoe2_ai.perception.capture --name tc_villager` to add a fixture.
+- Verified live (skirmish, 2026-11-16): TC selected with H, villager queued with Q, verified on screen
+  (food 200 → 150, item read as villager), progress followed (37 % → 66 % → 95 %), then "housed (5/5)" and
+  waiting. The villager-training frame is a test fixture (`tc_villager_20261116_203424.png`).
+- Second live run: four villagers queued back to back, each verified (food 200 → 150 → 100 → 50 → 0), then
+  "insufficient food". Two selection checks failed and were caught by verification, with no training key sent.
+  Both happened right as the game appeared: the first seconds after loading, and mid alt-tab. The controller
+  now waits for `min_in_game_observations` (2) consecutive in-game observations before sending any key.
+- Yellow/red population text (nearly housed) is sometimes not read; an unknown population never blocks training.
+- The panel counts as visible when either parchment strip (above the queue icon, under the bar) is clean,
+  so queued-item icons under the bar don't hide the queue. When the TC is selected but its queue still
+  can't be read, a capture is saved (`queue_unknown`, at most once a minute) to see why.
 - Templates were cut at 1680x1050 with the French UI and the Franks; other villager icons (civ, UI mod)
   or a different command-grid layout need a new `villager_button.png` / region.
 - A full observation takes ~2 s (Tesseract on all HUD fields), so a finished villager may wait a few

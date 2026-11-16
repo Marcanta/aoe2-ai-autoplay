@@ -66,9 +66,11 @@ class TownCenterConfig:
     idle_confirmations: int = 2  # idle reads needed to conclude a command did not take
     observe_interval: float = 1.0  # between cycles
     failure_backoff: float = 10.0  # no training attempt for this long after a failure
+    min_in_game_observations: int = 2  # consecutive in-game observations before any key (game start, alt-tab back)
     max_consecutive_failures: int = 3  # then halt: something is wrong, a human should look
     max_uncertain_cycles: int = 20  # cycles spent unable to resolve an uncertain command, then halt
     debug_dir: str = "captures/controller"
+    unknown_capture_interval: float = 60.0  # save a capture when the selected TC's queue is unreadable, at most this often
 
     @classmethod
     def from_json(cls, path: str | Path) -> "TownCenterConfig":
@@ -236,12 +238,27 @@ class TownCenterController:
         self._uncertain_cycles = 0
         self._idle_seen_while_uncertain = 0
         self._last_obs: Observation | None = None
+        self._last_unknown_capture = float("-inf")
+        self._in_game_streak = 0
 
     # --- helpers -----------------------------------------------------------------
     def _observe(self) -> Observation:
         obs = self.observer.observe()
         self._last_obs = obs
+        self._in_game_streak = self._in_game_streak + 1 if obs.game_detected else 0
         return obs
+
+    def _settling(self) -> str:
+        """Why the game is not yet stable enough to send keys, or "" when it is.
+
+        Right after a game loads or the window comes back to the front, the screen can still
+        show the previous state (another window on top, a panel not yet redrawn) and the game
+        may drop keys. Requiring a few consecutive in-game observations rides that out.
+        """
+        need = self.config.min_in_game_observations
+        if 0 < self._in_game_streak < need:
+            return f"game just detected ({self._in_game_streak}/{need} observations), letting it settle"
+        return ""
 
     def _wait(self, seconds: float) -> None:
         if seconds > 0:
@@ -284,6 +301,10 @@ class TownCenterController:
 
         obs = self._observe()
 
+        settling = self._settling()
+        if settling:
+            return CycleReport(Outcome.WAITED, self.state, detail=settling)
+
         if self.state is ControllerState.UNCERTAIN:
             return self._cycle_uncertain(obs)
 
@@ -291,6 +312,7 @@ class TownCenterController:
         log.debug("decision %s: %s", decision.kind.value, decision.reason)
 
         if decision.kind is DecisionKind.WAIT:
+            self._capture_unreadable_queue(obs)
             if self.state is ControllerState.BACKOFF and self.clock() >= self._backoff_until:
                 self.state = ControllerState.OBSERVING
             return CycleReport(Outcome.WAITED, self.state, decision, detail=decision.reason)
@@ -304,6 +326,19 @@ class TownCenterController:
                 return CycleReport(Outcome.WAITED, self.state, decision, detail="in back-off after a failure")
             self.state = ControllerState.OBSERVING
         return self._train(decision, obs)
+
+    def _capture_unreadable_queue(self, obs: Observation) -> None:
+        """Not a failure, but worth a look: the TC is selected and still its queue can't be read."""
+        tc = obs.town_center
+        if not (obs.game_detected and tc.is_selected and not tc.queue.is_valid):
+            return
+        now = self.clock()
+        if now - self._last_unknown_capture < self.config.unknown_capture_interval:
+            return
+        self._last_unknown_capture = now
+        path = self.recorder.capture(obs, "queue_unknown")
+        if path:
+            log.info("queue unreadable with the town center selected (%s); capture: %s", tc.queue.raw_text, path)
 
     def _select(self, decision: Decision, obs: Observation) -> CycleReport:
         previous = self.state
@@ -414,8 +449,9 @@ class TownCenterController:
             log.error("could not resolve an uncertain training command after %d cycles; halting", self._uncertain_cycles)
             return CycleReport(Outcome.HALTED, self.state, detail="uncertain command never resolved")
 
-        if obs.game_detected and tc.selected.is_valid and tc.selected.value is False:
-            # Selecting is idempotent and creates nothing; it is needed to see the queue.
+        if obs.game_detected and not tc.is_selected:
+            # Something else or nothing selected. Selecting is idempotent and creates
+            # nothing; it is needed to see the queue.
             result = self.executor.execute(self.config.select_action())
             return CycleReport(Outcome.UNCERTAIN, self.state, None, result, "re-selecting the town center to resolve an uncertain command")
         return CycleReport(Outcome.UNCERTAIN, self.state, None, None, "waiting for a conclusive observation")
@@ -441,6 +477,10 @@ class TownCenterController:
                 if type(exc).__name__ == "FailSafeException":
                     self.stop.trigger("pyautogui fail-safe")
                     report = CycleReport(Outcome.STOPPED, ControllerState.STOPPED)
+                elif self.stop.triggered:
+                    # e.g. Ctrl+C also kills the Tesseract child processes mid-read: a stop, not a failure.
+                    log.info("cycle interrupted by the stop: %r", exc)
+                    report = CycleReport(Outcome.STOPPED, ControllerState.STOPPED, detail=self.stop.reason)
                 else:
                     self._fail("cycle", f"unexpected error: {exc!r}", None)
                     log.exception("unexpected error in cycle")
@@ -468,13 +508,15 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--config", type=Path, help="JSON file with TownCenterConfig fields")
     parser.add_argument("--select-key", help="hotkey that selects the Town Center (default h)")
     parser.add_argument("--train-key", help="hotkey that trains a villager (default q)")
-    parser.add_argument("--stop-key", default="f12", help="emergency stop key (default F12)")
+    parser.add_argument("--stop-key", default="f12,pause", help="emergency stop key(s), comma-separated (default f12,pause); "
+                        "check yours with: python -m aoe2_ai.execution --check")
     parser.add_argument("--max-cycles", type=int, help="stop after this many cycles")
     parser.add_argument("--delay", type=float, default=5.0, help="seconds before starting (to switch to the game)")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
+    logging.getLogger("pytesseract").setLevel(logging.INFO)  # one debug line per OCR call drowns -v output
     config = TownCenterConfig.from_json(args.config) if args.config else TownCenterConfig()
     overrides = {k: v for k, v in (("select_hotkey", args.select_key), ("train_hotkey", args.train_key)) if v}
     if overrides:
@@ -482,19 +524,29 @@ def main(argv: list[str] | None = None) -> None:
 
     # Imported here: aoe2_ai.input sets process DPI awareness and loads pyautogui.
     from aoe2_ai.execution import ForegroundWindowGuard, StopKeyWatcher
+    from aoe2_ai.execution.stop import disable_quick_edit, install_console_stop, restore_console_mode, start_exit_watchdog
     from aoe2_ai.input import InputController
 
     from .observation import LiveObserver
 
     stop = EmergencyStop()
+    watcher = StopKeyWatcher(stop, args.stop_key)  # validates the keys before anything starts
+    console = install_console_stop(stop)  # Ctrl+C stops at once, even mid-OCR
     guard = ForegroundWindowGuard()
     executor = ActionExecutor(None if args.dry_run else InputController(), guard, dry_run=args.dry_run, stop=stop)
     observer = LiveObserver(guard)
     controller = TownCenterController(observer, executor, config)
 
-    print(f"Starting in {args.delay:.0f}s - switch to the game. Press {args.stop_key.upper()} (or slam the mouse into a corner) to stop.")
-    with StopKeyWatcher(stop, args.stop_key):
+    print(
+        f"Starting in {args.delay:.0f}s - switch to the game.\n"
+        f"STOP: press {watcher.label} (works with the game in front; on laptops F-keys may need Fn),\n"
+        f"      or Ctrl+C in this window{'' if console else ' (handler not installed)'}, or slam the mouse into a screen corner."
+    )
+    quick_edit = disable_quick_edit()  # a click in the console would otherwise freeze the program
+    start_exit_watchdog(stop)  # a stop always ends the process, even if the main thread is stuck
+    with watcher:
         if stop.wait(args.delay):
+            print(f"Stopped before starting: {stop.reason}")
             return
         try:
             stats = controller.run(args.max_cycles)
@@ -503,6 +555,7 @@ def main(argv: list[str] | None = None) -> None:
             stats = controller.stats
         finally:
             observer.close()
+            restore_console_mode(quick_edit)
     print(f"Done: {stats}. Failures: {len(controller.failures)}" + (f" (see {config.debug_dir})" if controller.failures else ""))
 
 
