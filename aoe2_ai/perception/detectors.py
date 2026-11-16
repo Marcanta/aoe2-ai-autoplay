@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from contextlib import nullcontext
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -18,6 +19,7 @@ import cv2
 import numpy as np
 
 from .game_state import Age, Detection, Population, Selection
+from .metrics import StageTimer
 from .ocr import OcrEngine, OcrResult
 from .regions import Region, RegionSet
 
@@ -126,6 +128,11 @@ class DetectorContext:
     ocr: OcrEngine
     timestamp: float
     min_confidence: float = DEFAULT_MIN_CONFIDENCE
+    timer: StageTimer | None = None
+
+    def stage(self, name: str):
+        """Time a block under ``name`` when a timer is attached."""
+        return self.timer.stage(name) if self.timer is not None else nullcontext()
 
 
 class Detector:
@@ -144,7 +151,8 @@ class Detector:
         region = ctx.regions[name]
         if not region.calibrated:
             return RegionReading(region, None, "uncalibrated"), f"region '{name}' not calibrated"
-        crop = region.crop(ctx.frame)
+        with ctx.stage("regions"):
+            crop = region.crop(ctx.frame)
         if crop.size == 0:
             return RegionReading(region, None, "outside frame"), f"region '{name}' outside frame"
         result = ctx.ocr.read(crop, whitelist=whitelist, psm=psm, dark=region.dark_text)
@@ -170,7 +178,8 @@ class _ParsedDetector(Detector):
         if problem:
             conf = reading.ocr.confidence if reading.ocr else 0.0
             return Detection.unknown(ctx.timestamp, raw or problem, conf), [reading]
-        value = self.parse(raw)
+        with ctx.stage("parse"):
+            value = self.parse(raw)
         if value is None:
             return Detection.unknown(ctx.timestamp, raw, reading.ocr.confidence), [RegionReading(reading.region, reading.ocr, "parse failed")]
         return Detection.valid(value, reading.ocr.confidence, ctx.timestamp, raw), [reading]
@@ -229,13 +238,15 @@ class AgeDetector(Detector):
         raw = reading.ocr.text if reading.ocr else ""
         if problem:
             return Detection.unknown(ctx.timestamp, raw or problem), [reading]
-        match = match_age(raw)
+        with ctx.stage("parse"):
+            match = match_age(raw)
         if match is None:
             return Detection.unknown(ctx.timestamp, raw, reading.ocr.confidence), [RegionReading(reading.region, reading.ocr, "no age match")]
         age, ratio = match
 
         if "age_progress" in ctx.regions:
-            fill = research_bar_fraction(ctx.regions["age_progress"].crop(ctx.frame))
+            with ctx.stage("regions"):
+                fill = research_bar_fraction(ctx.regions["age_progress"].crop(ctx.frame))
             if fill >= self.research_threshold:
                 index = AGE_ORDER.index(age)
                 if index == 0:  # nothing researches *into* Dark Age: inconsistent read
@@ -263,7 +274,8 @@ class SelectionDetector(Detector):
         hp_reading, hp_problem = self._read(ctx, "selection_hp", "0123456789/")
         readings.append(hp_reading)
         if not hp_problem and hp_reading.ocr:
-            parsed = parse_fraction(hp_reading.ocr.text)
+            with ctx.stage("parse"):
+                parsed = parse_fraction(hp_reading.ocr.text)
             if parsed and parsed[0] <= parsed[1]:
                 hp, hp_max = parsed
         raw_all = raw + (f" | {hp_reading.ocr.text}" if hp_reading.ocr else "")

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from .capture import Frame
 from .detectors import (
@@ -16,6 +17,7 @@ from .detectors import (
     default_detectors,
 )
 from .game_state import FIELDS, GameState, StateTracker
+from .metrics import StageTimer, TimedOcr, ocr_launches
 from .ocr import OcrEngine, TesseractOcr
 from .regions import RegionSet
 
@@ -27,6 +29,8 @@ class PerceptionResult:
     readings: dict[str, list[RegionReading]] = field(default_factory=dict)  # per field, for debugging
     hud_score: float = 0.0
     regions: RegionSet | None = None  # scaled to the frame
+    timings: dict[str, float] = field(default_factory=dict)  # seconds per stage (see metrics.py), "total" = wall time
+    ocr_launches: int | None = None  # Tesseract process launches for this observation, when the engine counts them
 
 
 class Perception:
@@ -62,13 +66,22 @@ class Perception:
 
     def observe(self, frame: Frame) -> PerceptionResult:
         """Run all detectors on one frame, without updating the tracker."""
-        regions = self.regions.for_frame(frame.image)
-        hud_visible, hud_score = (True, 1.0) if self.hud is None else self.hud.visible(frame.image, regions)
+        started = time.perf_counter()
+        launches_before = ocr_launches(self.ocr)
+        timer = StageTimer()
+        result = self._observe(frame, timer)
+        return self._finish(result, timer, started, launches_before)
+
+    def _observe(self, frame: Frame, timer: StageTimer) -> PerceptionResult:
+        with timer.stage("regions"):
+            regions = self.regions.for_frame(frame.image)
+        with timer.stage("hud"):
+            hud_visible, hud_score = (True, 1.0) if self.hud is None else self.hud.visible(frame.image, regions)
         if not hud_visible:
             observed = GameState.empty(frame.timestamp, frame.source, f"HUD not visible (score {hud_score:.2f})")
             return PerceptionResult(observed, observed, {}, hud_score, regions)
 
-        ctx = DetectorContext(frame.image, regions, self.ocr, frame.timestamp, self.min_confidence)
+        ctx = DetectorContext(frame.image, regions, TimedOcr(self.ocr, timer), frame.timestamp, self.min_confidence, timer)
         # Detectors are independent and Tesseract runs as a subprocess, so threads run them in parallel.
         values, readings = {}, {}
         for detector, (det, reads) in zip(self.detectors, self._pool.map(lambda d: d.detect(ctx), self.detectors)):
@@ -77,8 +90,19 @@ class Perception:
         observed = GameState(frame.timestamp, frame.source, True, **values, **missing)
         return PerceptionResult(observed, observed, readings, hud_score, regions)
 
+    def _finish(self, result: PerceptionResult, timer: StageTimer, started: float, launches_before: int | None) -> PerceptionResult:
+        timings = timer.seconds()
+        timings["total"] = time.perf_counter() - started
+        after = ocr_launches(self.ocr)
+        launches = None if launches_before is None or after is None else after - launches_before
+        return replace(result, timings=timings, ocr_launches=launches)
+
     def analyze(self, frame: Frame) -> PerceptionResult:
         """Observe ``frame`` and merge it with recent history."""
-        result = self.observe(frame)
-        state = self.tracker.update(result.observed)
-        return PerceptionResult(state, result.observed, result.readings, result.hud_score, result.regions)
+        started = time.perf_counter()
+        launches_before = ocr_launches(self.ocr)
+        timer = StageTimer()
+        result = self._observe(frame, timer)
+        with timer.stage("track"):
+            state = self.tracker.update(result.observed)
+        return self._finish(replace(result, state=state), timer, started, launches_before)
