@@ -47,13 +47,14 @@ from .ocr import OcrEngine
 from .regions import RegionSet
 from .town_center import _load_template, fuzzy_name_match, template_score
 
-# An idle villager keeps the name of its last task, so every role counts. English and French UI.
+# An idle villager keeps the name of its last task, so every role counts. Taken from the game's
+# string tables (resources/<lang>/strings/key-value), ids 5121-5127, 5402, 5482, 5496, 5499, 5606-5607.
+# Add other UI languages from the same ids.
 VILLAGER_ROLE_NAMES: tuple[str, ...] = (
-    "Villager", "Builder", "Farmer", "Fisherman", "Fisher", "Forager", "Hunter", "Lumberjack",
-    "Gold Miner", "Stone Miner", "Shepherd", "Repairer",
-    "Villageois", "Villageoise", "Bâtisseur", "Bâtisseuse", "Fermier", "Fermière", "Pêcheur", "Pêcheuse",
-    "Cueilleur", "Cueilleuse", "Chasseur", "Chasseuse", "Bûcheron", "Bûcheronne", "Mineur d'or",
-    "Mineuse d'or", "Mineur de pierre", "Mineuse de pierre", "Berger", "Bergère", "Réparateur", "Réparatrice",
+    "Villager", "Builder", "Farmer", "Hunter", "Lumberjack", "Stone Miner", "Repairer",
+    "Forager", "Gold Miner", "Shepherd", "Fisherman",
+    "Villageois", "Villageoise", "Constructeur", "Fermier", "Chasseur", "Bûcheron", "Mineur de pierre", "Réparateur",
+    "Cueilleur", "Mineur d'or", "Berger", "Pêcheur",
 )
 
 MAX_IDLE = 500
@@ -70,6 +71,18 @@ def idle_icon_colors(crop: np.ndarray) -> tuple[float, float]:
     hi, lo = c.max(axis=2), c.min(axis=2)
     grey = (hi - lo < 30) & (hi > 140)
     return float(yellow.mean()), float(grey.mean())
+
+
+def white_only(crop: np.ndarray) -> np.ndarray:
+    """Keep the white digits, drop the yellow button behind them.
+
+    The count is white on the yellow icon. The OCR's colour pass otherwise also sees the
+    yellow silhouette and votes "47" against "7", which drops the confidence below the
+    threshold (seen live: 0.58 -> 0.73-0.96 with this).
+    """
+    if crop.size == 0 or crop.ndim != 3:
+        return crop
+    return np.repeat(crop.min(axis=2)[..., None], 3, axis=2)
 
 
 def parse_idle_count(text: str) -> int | None:
@@ -260,7 +273,7 @@ class VillagerDetector:
 
         count: Detection[int] = Detection.unknown(ts, "count not read")
         if ocr is not None and "idle_count" in regions and regions["idle_count"].calibrated:
-            crop = regions["idle_count"].crop(frame)
+            crop = white_only(regions["idle_count"].crop(frame))
             read = ocr.read(crop, whitelist="0123456789", dark=regions["idle_count"].dark_text) if crop.size else None
             if read is not None and not read.empty and read.confidence >= min_confidence:
                 value = parse_idle_count(read.text)

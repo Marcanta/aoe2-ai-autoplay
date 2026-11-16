@@ -237,6 +237,12 @@ class IdleVillagerController:
                 log.info("no idle villagers left: pass over")
             self.current_pass = None
             return
+        if self.current_pass is not None and count is None:
+            return  # count unread this frame (seen live: "7" then unread): not a change of the idle set
+        if self.current_pass is not None and self.current_pass.key[1] is None:
+            # First count read for a pass started without one: same idle set, now with a size.
+            self.current_pass.key, self.current_pass.target = key, count
+            return
         if self.current_pass is None or self.current_pass.key != key:
             target = count if count is not None else 1  # unknown count: one at a time, re-checked each pass
             self.current_pass = SelectionPass(key, target)

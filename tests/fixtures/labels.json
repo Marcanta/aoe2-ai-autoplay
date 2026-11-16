@@ -8,6 +8,12 @@
       "selection": {"name": "Villageois", "hp": [25, 25]},
       "_idle": {"present": true, "count": 1}, "_villager": true
     },
+    "idle_seven_villager_selected_20261116_2129.png": {
+      "_note": "Live idle-villager run: 7 idle, one of them selected by '.' (play area and app overlay blacked out). The count '7' read at only 0.58 before the white-only preprocessing.",
+      "wood": 150, "food": 0, "gold": 100, "stone": 200, "population": [8, 15], "game_time": 1058, "age": "dark",
+      "selection": {"name": "Villageois", "hp": [25, 25]},
+      "_idle": {"present": true, "count": 7}, "_villager": true
+    },
     "focus_lost_dimmed_20261116_204359.png": {
       "_note": "Game window lost focus (a console in front): the whole game is dimmed. Nothing may be read as valid.",
       "selection": null,

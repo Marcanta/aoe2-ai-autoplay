@@ -166,6 +166,36 @@ def test_unknown_count_selects_one_per_pass():
     assert ctrl.cycle().outcome is Outcome.WAITED and presses(inp) == 1
 
 
+def test_count_flickering_unreadable_does_not_restart_the_pass():
+    # Seen live: the count reads "7", then nothing, then "7" again.
+    ctrl, inp, _, clock = make_controller(
+        make_idle_obs(count=2), make_idle_obs(count=2, villager=A),
+        make_idle_obs(count=None, villager=A), make_idle_obs(count=None, villager=B),
+        make_idle_obs(count=2, villager=B),
+    )
+    outcomes = []
+    for _ in range(4):
+        outcomes.append(ctrl.cycle().outcome)
+        clock.now += 2
+    assert outcomes == [Outcome.SELECTED, Outcome.SELECTED, Outcome.WAITED, Outcome.WAITED]
+    assert ctrl.stats.passes == 1 and presses(inp) == 2
+
+
+def test_count_read_later_extends_a_pass_without_forgetting_visited():
+    ctrl, inp, _, clock = make_controller(
+        make_idle_obs(count=None), make_idle_obs(count=None, villager=A),
+        make_idle_obs(count=2, villager=A), make_idle_obs(count=2, villager=B),
+        make_idle_obs(count=2, villager=B),
+    )
+    assert ctrl.cycle().outcome is Outcome.SELECTED
+    clock.now += 2
+    r = ctrl.cycle()
+    assert r.outcome is Outcome.SELECTED and r.villager == B
+    clock.now += 2
+    assert ctrl.cycle().outcome is Outcome.WAITED
+    assert ctrl.stats.passes == 1 and presses(inp) == 2
+
+
 def test_failed_selection_records_failure_backs_off_and_halts(tmp_path):
     frame = Frame(np.zeros((10, 10, 3), np.uint8), 0.0, "test")
     other = replace(make_idle_obs(count=2, villager=False), frame=frame)  # e.g. the Town Center stays selected
