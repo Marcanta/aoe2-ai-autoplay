@@ -1,0 +1,1013 @@
+[
+ {
+  "frame": "frame_0001.png",
+  "opencv": {
+   "wood": 9900,
+   "food": null,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2760,
+   "idle_present": true,
+   "idle_count": 41
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8421,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 42,
+    "cap": 60
+   },
+   "game_time": 2760,
+   "idle_present": true,
+   "idle_count": 41
+  }
+ },
+ {
+  "frame": "frame_0002.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8371,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2788,
+   "idle_present": true,
+   "idle_count": 42
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8371,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 43,
+    "cap": 60
+   },
+   "game_time": 2788,
+   "idle_present": true,
+   "idle_count": 42
+  }
+ },
+ {
+  "frame": "frame_0003.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8321,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2813,
+   "idle_present": true,
+   "idle_count": 43
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8321,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 44,
+    "cap": 60
+   },
+   "game_time": 2813,
+   "idle_present": true,
+   "idle_count": 43
+  }
+ },
+ {
+  "frame": "frame_0004.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8271,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2841,
+   "idle_present": true,
+   "idle_count": 44
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8271,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 45,
+    "cap": 60
+   },
+   "game_time": 2841,
+   "idle_present": true,
+   "idle_count": 44
+  }
+ },
+ {
+  "frame": "frame_0005.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8221,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2866,
+   "idle_present": true,
+   "idle_count": 45
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8221,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 46,
+    "cap": 60
+   },
+   "game_time": 2866,
+   "idle_present": true,
+   "idle_count": 45
+  }
+ },
+ {
+  "frame": "frame_0006.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8171,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2891,
+   "idle_present": true,
+   "idle_count": 46
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8171,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 47,
+    "cap": 60
+   },
+   "game_time": 2891,
+   "idle_present": true,
+   "idle_count": 46
+  }
+ },
+ {
+  "frame": "frame_0007.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8121,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2916,
+   "idle_present": true,
+   "idle_count": 47
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8121,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 48,
+    "cap": 60
+   },
+   "game_time": 2916,
+   "idle_present": true,
+   "idle_count": 47
+  }
+ },
+ {
+  "frame": "frame_0008.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8071,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 2943,
+   "idle_present": true,
+   "idle_count": 48
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8071,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 49,
+    "cap": 60
+   },
+   "game_time": 2943,
+   "idle_present": true,
+   "idle_count": 48
+  }
+ },
+ {
+  "frame": "frame_0009.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8071,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 50,
+    "cap": 60
+   },
+   "game_time": 2968,
+   "idle_present": true,
+   "idle_count": 49
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8071,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 50,
+    "cap": 60
+   },
+   "game_time": 2968,
+   "idle_present": true,
+   "idle_count": 49
+  }
+ },
+ {
+  "frame": "frame_0010.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 8021,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 50,
+    "cap": 60
+   },
+   "game_time": 2995,
+   "idle_present": true,
+   "idle_count": 49
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 8021,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 50,
+    "cap": 60
+   },
+   "game_time": 2995,
+   "idle_present": true,
+   "idle_count": 49
+  }
+ },
+ {
+  "frame": "frame_0011.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7971,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 51,
+    "cap": 60
+   },
+   "game_time": 3023,
+   "idle_present": true,
+   "idle_count": 50
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7971,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 51,
+    "cap": 60
+   },
+   "game_time": 3023,
+   "idle_present": true,
+   "idle_count": 30
+  }
+ },
+ {
+  "frame": "frame_0012.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7921,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 52,
+    "cap": 60
+   },
+   "game_time": 3050,
+   "idle_present": true,
+   "idle_count": 51
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7921,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 52,
+    "cap": 60
+   },
+   "game_time": 3050,
+   "idle_present": true,
+   "idle_count": 31
+  }
+ },
+ {
+  "frame": "frame_0013.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7871,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 53,
+    "cap": 60
+   },
+   "game_time": 3075,
+   "idle_present": true,
+   "idle_count": 52
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7871,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 53,
+    "cap": 60
+   },
+   "game_time": 3075,
+   "idle_present": true,
+   "idle_count": 32
+  }
+ },
+ {
+  "frame": "frame_0014.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7821,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 54,
+    "cap": 60
+   },
+   "game_time": 3100,
+   "idle_present": true,
+   "idle_count": 53
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7821,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 54,
+    "cap": 60
+   },
+   "game_time": 3100,
+   "idle_present": true,
+   "idle_count": 33
+  }
+ },
+ {
+  "frame": "frame_0015.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7771,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 55,
+    "cap": 60
+   },
+   "game_time": 3125,
+   "idle_present": true,
+   "idle_count": 54
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7771,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 55,
+    "cap": 60
+   },
+   "game_time": 3125,
+   "idle_present": true,
+   "idle_count": 34
+  }
+ },
+ {
+  "frame": "frame_0016.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7721,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 56,
+    "cap": 60
+   },
+   "game_time": 3150,
+   "idle_present": true,
+   "idle_count": 55
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7721,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 3150,
+   "idle_present": true,
+   "idle_count": 35
+  }
+ },
+ {
+  "frame": "frame_0017.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7671,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 57,
+    "cap": 60
+   },
+   "game_time": 3179,
+   "idle_present": true,
+   "idle_count": 56
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7671,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 3179,
+   "idle_present": true,
+   "idle_count": 36
+  }
+ },
+ {
+  "frame": "frame_0018.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7621,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 58,
+    "cap": 60
+   },
+   "game_time": 3204,
+   "idle_present": true,
+   "idle_count": 57
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7621,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 58,
+    "cap": 60
+   },
+   "game_time": 3204,
+   "idle_present": true,
+   "idle_count": 57
+  }
+ },
+ {
+  "frame": "frame_0019.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7621,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 59,
+    "cap": 60
+   },
+   "game_time": 3229,
+   "idle_present": true,
+   "idle_count": 58
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7621,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 59,
+    "cap": 60
+   },
+   "game_time": 3229,
+   "idle_present": true,
+   "idle_count": 38
+  }
+ },
+ {
+  "frame": "frame_0020.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 59,
+    "cap": 60
+   },
+   "game_time": 3254,
+   "idle_present": true,
+   "idle_count": 58
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": null,
+   "game_time": 3254,
+   "idle_present": true,
+   "idle_count": 38
+  }
+ },
+ {
+  "frame": "frame_0021.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3281,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3281,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0022.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3309,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3309,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0023.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3335,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3335,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0024.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3361,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3361,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0025.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3389,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3389,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0026.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3416,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3416,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0027.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3443,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3443,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0028.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3470,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3470,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0029.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3496,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3496,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0030.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3522,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3522,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0031.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3550,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3550,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0032.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3577,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3577,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0033.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3604,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3604,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0034.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3631,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3631,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0035.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3659,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3659,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ },
+ {
+  "frame": "frame_0036.png",
+  "opencv": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3686,
+   "idle_present": true,
+   "idle_count": 59
+  },
+  "tesseract": {
+   "wood": 9900,
+   "food": 7571,
+   "gold": 100,
+   "stone": 200,
+   "population": {
+    "current": 60,
+    "cap": 60
+   },
+   "game_time": 3686,
+   "idle_present": true,
+   "idle_count": 59
+  }
+ }
+]

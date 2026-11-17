@@ -606,6 +606,24 @@ class HybridOcr:
 
 
 # --- template building ----------------------------------------------------------------
+OCR_ENGINES = ("hybrid", "tesseract")
+
+
+def make_ocr(name: str = "hybrid") -> OcrEngine:
+    """The OCR engine called ``name``.
+
+    ``hybrid`` (the controllers' default): OpenCV for the numeric HUD fields, Tesseract for
+    everything else and for any number OpenCV is unsure of. ``tesseract``: Tesseract only.
+    """
+    from .ocr import TesseractOcr
+
+    if name == "hybrid":
+        return HybridOcr(TesseractOcr())
+    if name == "tesseract":
+        return TesseractOcr()
+    raise ValueError(f"unknown OCR engine {name!r} (expected one of {', '.join(OCR_ENGINES)})")
+
+
 def expected_text(kind: str, value: Any) -> str:
     """Characters a field of ``kind`` shows for a labelled ``value`` (clock: its six digits)."""
     if kind == "digits":

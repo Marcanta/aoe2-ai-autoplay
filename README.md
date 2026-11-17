@@ -99,8 +99,8 @@ Notes:
 - The game clock must be shown in game (top bar, right of the age).
 - While an age-up is researched, the top bar shows the *target* age over a red progress bar. Perception reports the current age, with "(researching)" in `raw_text`.
 - Selected-object names are raw OCR from the English model, so some French accents are lost.
-- One frame takes about 2 s, mostly Tesseract process start-up on Windows.
-- Optional, opt-in: `Perception(ocr=HybridOcr(TesseractOcr()))` (`aoe2_ai.perception.digit_recognizer`) reads the numeric top-bar fields (resources, population, clock, idle count) by OpenCV template matching in well under a millisecond each, and falls back to Tesseract whenever it is not sure. Approach, accuracy and limits: [docs/digit_recognition.md](docs/digit_recognition.md).
+- One frame takes about 2 s with `Perception()`, mostly Tesseract process start-up on Windows.
+- The controllers use `HybridOcr` (`aoe2_ai.perception.digit_recognizer`; `Perception(ocr=make_ocr("hybrid"))`), which reads the numeric top-bar fields (resources, population, clock, idle count) by OpenCV template matching in well under a millisecond each, and falls back to Tesseract whenever it is not sure. Offline a full observation drops from ~1.6 s to ~0.7 s; live, the two controllers are not faster (their text reads still use Tesseract) but read the population and idle count more reliably ([docs/live_validation.md](docs/live_validation.md)). `--ocr tesseract` on a controller goes back to Tesseract only. Approach, accuracy and limits: [docs/digit_recognition.md](docs/digit_recognition.md).
 - Regions were measured at 1680x1050. Other 16:10 resolutions scale automatically; other aspect ratios need recalibrating (`--calibrate`).
 
 ## Town Center controller

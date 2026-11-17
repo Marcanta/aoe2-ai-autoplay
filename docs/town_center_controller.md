@@ -18,6 +18,7 @@ aoe2_ai/controllers/town_center.py  decide() rules + TownCenterController closed
 ```powershell
 python -m aoe2_ai.controllers --dry-run -v   # observe + decide, log "would train", send nothing
 python -m aoe2_ai.controllers                 # live
+python -m aoe2_ai.controllers --ocr tesseract # live, Tesseract only (default: OpenCV digits + Tesseract)
 ```
 
 3. Switch to the game within 5 seconds (`--delay`).
@@ -148,5 +149,7 @@ Conclusions:
   can't be read, a capture is saved (`queue_unknown`, at most once a minute) to see why.
 - Templates were cut at 1680x1050 with the French UI and the Franks; other villager icons (civ, UI mod)
   or a different command-grid layout need a new `villager_button.png` / region.
-- A full observation takes ~2 s (Tesseract on all HUD fields), so a finished villager may wait a few
-  seconds before the next one is queued.
+- Observations take ~1.1 s live (mean, P95 ~1.4 s), with `HybridOcr` and with Tesseract only alike:
+  the numeric HUD fields are read by OpenCV, but the Town Center progress and item lines and the
+  selected name still go through Tesseract on every observation, and they set the pace (see
+  [live_validation.md](live_validation.md)). A finished villager may wait a moment before the next one is queued.

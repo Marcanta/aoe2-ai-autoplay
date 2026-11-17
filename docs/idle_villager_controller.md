@@ -67,7 +67,8 @@ Conclusions:
   The crop is reduced to its white pixels first: the OCR's colour pass otherwise also sees the yellow
   silhouette and votes `47` against `7`, which live dropped the confidence to 0.58 (rejected) on most
   frames; with white-only it reads 0.73–0.96.
-  The single digit `1` is too thin for Tesseract here: the count is then UNKNOWN and the controller
+  The count is read by OpenCV (`HybridOcr`, the default), which reads the single digit `1` too. With
+  `--ocr tesseract` the `1` is too thin for Tesseract: the count is then UNKNOWN and the controller
   selects one villager per pass, which is exactly right for one idle villager.
 - **A villager is selected when the selected-object name (read this frame) is a villager role.** An idle
   villager keeps its last task's name (`Bûcheron`, `Constructeur`, …), so every role counts, matched
@@ -165,4 +166,8 @@ It works in **passes**:
   thumbnail; the pass then ends early (safe side: fewer selections, never repeats).
 - Regions and the build-button template were measured at 1680x1050 with the French UI. Other 16:10
   resolutions scale; other aspect ratios, UI mods or a different command-grid layout need recalibrating.
-- A full observation takes 4–6 s live (Tesseract on all HUD fields); faster OCR is on the roadmap.
+- An observation takes ~1.3 s live (mean, P95 ~1.5 s) with the idle-villager profile and the region
+  cache, with `HybridOcr` and with Tesseract only alike: the selected-object name is read by Tesseract on
+  every observation and sets the pace. What `HybridOcr` changes here is the count: Tesseract reads
+  counts 50–58 on the button as 30–38 (accepted as valid), OpenCV reads them right
+  (see [live_validation.md](live_validation.md)).

@@ -1,0 +1,29 @@
+{
+  "observations": {
+    "n": 267,
+    "mean_ms": 1079.3137445698483,
+    "median_ms": 1065.2919999993173,
+    "p95_ms": 1378.4720999974525,
+    "max_ms": 1877.0804999949178
+  },
+  "observations_in_game": {
+    "n": 267,
+    "mean_ms": 1079.3137445698483,
+    "median_ms": 1065.2919999993173,
+    "p95_ms": 1378.4720999974525,
+    "max_ms": 1877.0804999949178
+  },
+  "launches_mean": 4.224719101123595,
+  "launches_total": 1128,
+  "digit_reads": null,
+  "numeric_readings_in_game": 534,
+  "numeric_not_valid_in_game": {
+    "population": 19
+  },
+  "frames_saved": 36,
+  "cycles": 250,
+  "outcomes": {
+    "waited": 233,
+    "trained": 17
+  }
+}

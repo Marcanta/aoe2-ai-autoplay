@@ -13,6 +13,7 @@ import logging
 from typing import Any, Callable, Protocol
 
 from aoe2_ai.execution import ActionExecutor, EmergencyStop
+from aoe2_ai.perception.digit_recognizer import OCR_ENGINES
 from aoe2_ai.perception.profile import FULL, PerceptionProfile
 
 from .observation import LiveObserver
@@ -32,6 +33,8 @@ def add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--max-cycles", type=int, help="stop after this many cycles")
     parser.add_argument("--delay", type=float, default=5.0, help="seconds before starting (to switch to the game)")
     parser.add_argument("--metrics", metavar="DIR", help="record observation latency, cycle outcomes and before/after frames of every action to DIR")
+    parser.add_argument("--ocr", choices=OCR_ENGINES, default="hybrid",
+                        help="OCR engine: hybrid (default; OpenCV for numbers, Tesseract for text and as fallback) or tesseract (Tesseract only)")
     parser.add_argument("-v", "--verbose", action="store_true")
 
 
@@ -60,7 +63,7 @@ def run_live(
     console = install_console_stop(stop)  # Ctrl+C stops at once, even mid-OCR
     guard = ForegroundWindowGuard()
     executor = ActionExecutor(None if args.dry_run else InputController(), guard, dry_run=args.dry_run, stop=stop)
-    observer = LiveObserver(guard, profile=profile)
+    observer = LiveObserver(guard, profile=profile, ocr=getattr(args, "ocr", "hybrid"))
     controller = make_controller(observer, executor)
     metrics = None
     if getattr(args, "metrics", None):
