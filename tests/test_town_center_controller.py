@@ -17,7 +17,6 @@ from aoe2_ai.controllers.town_center import (
 from aoe2_ai.execution import ActionExecutor, ActionStatus, EmergencyStop, StaticGuard
 from aoe2_ai.perception.capture import Frame
 from aoe2_ai.perception.game_state import Status
-from aoe2_ai.perception.town_center import QueueStatus
 
 from controller_helpers import IDLE, PRODUCING, FakeClock, MockInput, ScriptedObserver, make_obs
 
