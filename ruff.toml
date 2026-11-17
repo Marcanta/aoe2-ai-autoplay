@@ -1,0 +1,8 @@
+# Lint config shared by local runs and CI (`ruff check .`).
+# Kept minimal on purpose: syntax errors and pyflakes (unused imports, undefined names...).
+target-version = "py312"
+line-length = 120
+extend-exclude = ["captures", "runs"]
+
+[lint]
+select = ["E9", "F"]

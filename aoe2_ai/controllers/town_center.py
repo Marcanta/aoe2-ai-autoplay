@@ -32,7 +32,7 @@ import json
 import logging
 import re
 import time
-from dataclasses import asdict, dataclass, field, fields
+from dataclasses import asdict, dataclass, fields
 from enum import Enum
 from pathlib import Path
 from typing import Callable
