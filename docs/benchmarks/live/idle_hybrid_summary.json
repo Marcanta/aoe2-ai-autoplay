@@ -1,0 +1,31 @@
+{
+  "observations": {
+    "n": 459,
+    "mean_ms": 1233.1836030501868,
+    "median_ms": 1292.0048999949358,
+    "p95_ms": 1489.6358999976655,
+    "max_ms": 1977.285800006939
+  },
+  "observations_in_game": {
+    "n": 446,
+    "mean_ms": 1267.8428340807723,
+    "median_ms": 1295.2072499974747,
+    "p95_ms": 1491.7630999989342,
+    "max_ms": 1977.285800006939
+  },
+  "launches_mean": 4.67755991285403,
+  "launches_total": 2147,
+  "digit_reads": {
+    "opencv": 1,
+    "fallback": 0,
+    "fallback_rate": 0.0
+  },
+  "numeric_readings_in_game": 446,
+  "numeric_not_valid_in_game": {},
+  "frames_saved": 64,
+  "cycles": 400,
+  "outcomes": {
+    "waited": 341,
+    "selected": 59
+  }
+}

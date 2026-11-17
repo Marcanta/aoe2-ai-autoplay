@@ -213,5 +213,14 @@ which 23 ms is loading the screenshot.
   `Perception()` constructed directly still uses Tesseract only. `--ocr tesseract`
   is the switch back if a setup misreads (none has in the tests: a refused field
   falls back to Tesseract, it is never guessed).
+* **Live, the controllers are not faster.** In a real skirmish
+  ([live_validation.md](live_validation.md)) the Town Center and idle-villager
+  observations take the same ~1.1 s / ~1.3 s with either engine: their text reads
+  (queue lines, selected name) still launch Tesseract every observation, and the
+  region cache already skipped unchanged numbers. The live gain is correctness
+  (yellow population, idle counts 50–58), not speed.
+* **Population `NN/60` falls back often.** When the `6` and `0` touch, OpenCV
+  refuses (≈20 % of live population reads in one run); Tesseract reads them.
+  Needs more `6` templates.
 * **What is not covered.** Text fields, selection HP (dark text on parchment,
   another font) and the Town Center queue still use Tesseract.

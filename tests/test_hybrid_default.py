@@ -91,3 +91,43 @@ def test_default_observer_on_real_frames(default_observer, name):
     # clock hidden at game start) OpenCV refuses the crop and Tesseract finds nothing either.
     if all(LABELS[name].get(f) is not None for f in NUMERIC):
         assert stats.fallback == fallback_before
+
+
+@requires_tesseract
+def test_live_metrics_record_digit_reads_fields_and_frames(tmp_path):
+    from aoe2_ai.controllers.metrics import LiveMetrics
+
+    name = "eco_20261116_184242.png"
+
+    class Source:
+        def __init__(self):
+            self.t = 0.0
+
+        def grab(self):
+            self.t += 10.0
+            return load_frame(FRAMES / name, timestamp=self.t)
+
+    obs = LiveObserver(StaticGuard(True, "test"), source=Source())
+
+    class Controller:
+        observer = obs
+
+        def cycle(self):
+            self.observer.observe()
+            return type("R", (), {"outcome": "waited", "decision": None, "detail": ""})()
+
+    ctrl = Controller()
+    metrics = LiveMetrics(tmp_path, frame_every=15.0)
+    metrics.attach(obs, ctrl)
+    try:
+        for _ in range(3):
+            ctrl.cycle()
+    finally:
+        summary = metrics.close()
+        obs.perception.close()
+    first, second = metrics.observations[0], metrics.observations[1]
+    assert first["digits"]["opencv"] >= 6 and first["digits"]["fallback"] == 0
+    assert second["digits"]["opencv"] == 0  # unchanged frame: region cache, no read at all
+    assert first["fields"]["wood"]["status"] == "valid" and first["fields"]["wood"]["value"] == LABELS[name]["wood"]
+    assert summary["digit_reads"]["fallback_rate"] == 0.0 and summary["numeric_not_valid_in_game"] == {}
+    assert summary["frames_saved"] == 2 and (tmp_path / "frame_0001.png").exists()  # t=10 and t=30

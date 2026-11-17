@@ -166,6 +166,8 @@ It works in **passes**:
   thumbnail; the pass then ends early (safe side: fewer selections, never repeats).
 - Regions and the build-button template were measured at 1680x1050 with the French UI. Other 16:10
   resolutions scale; other aspect ratios, UI mods or a different command-grid layout need recalibrating.
-- A full observation took 4–6 s live with Tesseract on all HUD fields. The numeric fields now go
-  through OpenCV (on the saved frames a full observation drops from ~1.6 s to ~0.7 s, see
-  [digit_recognition.md](digit_recognition.md)); the selected-object name still uses Tesseract.
+- An observation takes ~1.3 s live (mean, P95 ~1.5 s) with the idle-villager profile and the region
+  cache, with `HybridOcr` and with Tesseract only alike: the selected-object name is read by Tesseract on
+  every observation and sets the pace. What `HybridOcr` changes here is the count: Tesseract reads
+  counts 50–58 on the button as 30–38 (accepted as valid), OpenCV reads them right
+  (see [live_validation.md](live_validation.md)).
