@@ -14,18 +14,24 @@ text) still goes to Tesseract unchanged.
 
 ## Using it
 
-It is opt-in and changes nothing by default: `Perception()` still uses Tesseract.
+The controllers use it by default: `LiveObserver` (and so `python -m aoe2_ai.controllers ...`)
+builds its perception with `make_ocr("hybrid")`. Pass `--ocr tesseract` to a controller, or
+`LiveObserver(guard, ocr="tesseract")`, to go back to Tesseract only. `Perception()` on its own
+still uses Tesseract, so direct callers, the perception CLI and `python -m aoe2_ai.benchmark`
+(without `--ocr hybrid`) are unchanged.
 
 ```python
 from aoe2_ai.perception import Perception
 from aoe2_ai.perception.ocr import TesseractOcr
-from aoe2_ai.perception.digit_recognizer import HybridOcr, DigitRecognizer
+from aoe2_ai.perception.digit_recognizer import HybridOcr, DigitRecognizer, make_ocr
 
 perception = Perception(ocr=HybridOcr(TesseractOcr()))      # same API, same GameState
+perception = Perception(ocr=make_ocr("hybrid"))             # the same, as the controllers build it
 reading = DigitRecognizer().recognize(crop, "fraction")     # standalone: DigitReading(status, text, value, confidence, reason)
 ```
 
 ```powershell
+python -m aoe2_ai.controllers --dry-run --ocr tesseract                # a controller with Tesseract only
 python -m aoe2_ai.perception.digit_recognizer read --image shot.png   # what OpenCV reads in each numeric field
 python -m aoe2_ai.perception.digit_recognizer build                   # rebuild the templates from the labelled fixtures
 python -m aoe2_ai.digit_benchmark --extra captures --json docs/benchmarks/digits.json   # per-field comparison
@@ -203,8 +209,9 @@ which 23 ms is loading the screenshot.
   then reads it as before).
 * **Colon not verified.** The clock layout is checked through digit spacing,
   not by matching the colon glyphs.
-* **Not the default.** `Perception()` still uses Tesseract only. Switching the
-  controllers to `HybridOcr` is a separate decision (a one-line change in
-  `LiveObserver`), deliberately out of this change.
+* **Default for the controllers only.** `LiveObserver` uses `HybridOcr`;
+  `Perception()` constructed directly still uses Tesseract only. `--ocr tesseract`
+  is the switch back if a setup misreads (none has in the tests: a refused field
+  falls back to Tesseract, it is never guessed).
 * **What is not covered.** Text fields, selection HP (dark text on parchment,
   another font) and the Town Center queue still use Tesseract.

@@ -39,6 +39,7 @@ from aoe2_ai.controllers.observation import LiveObserver, Observation
 from aoe2_ai.execution import StaticGuard
 from aoe2_ai.perception import Perception, load_frame
 from aoe2_ai.perception.detectors import _normalize
+from aoe2_ai.perception.digit_recognizer import make_ocr
 from aoe2_ai.perception.game_state import Status
 from aoe2_ai.perception.profile import FULL, PROFILES, PerceptionProfile
 
@@ -184,19 +185,6 @@ def run_steady(labels: dict, frames_dir: Path, repeat: int, perception: Percepti
             observe_file(observer, frames_dir / name, 0.0)
             run.observe(observer, frames_dir / name, labels[name], 1.0)
     return run
-
-
-def make_ocr(name: str):
-    """``tesseract`` (the default engine) or ``hybrid`` (OpenCV digits, Tesseract fallback)."""
-    from aoe2_ai.perception.ocr import TesseractOcr
-
-    if name == "tesseract":
-        return TesseractOcr()
-    if name == "hybrid":
-        from aoe2_ai.perception.digit_recognizer import HybridOcr
-
-        return HybridOcr(TesseractOcr())
-    raise ValueError(f"unknown OCR engine {name!r}")
 
 
 def benchmark(labels: dict, sequence: list[str], frames_dir: Path, repeat: int, profile: PerceptionProfile,

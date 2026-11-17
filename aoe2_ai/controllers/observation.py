@@ -8,6 +8,7 @@ from typing import Any, Protocol
 
 from aoe2_ai.execution.guard import GameGuard
 from aoe2_ai.perception.capture import Frame, LiveSource
+from aoe2_ai.perception.digit_recognizer import make_ocr
 from aoe2_ai.perception.game_state import GameState
 from aoe2_ai.perception.metrics import StageTimer, TimedOcr, ocr_launches
 from aoe2_ai.perception.game_state import Detection
@@ -51,8 +52,10 @@ class LiveObserver:
     """Screen -> Perception -> TownCenterDetector + VillagerDetector, plus the foreground-window guard.
 
     ``profile`` limits the observation to the fields a controller reads (default: everything).
-    Without an explicit ``perception``, the observer builds one with the region cache on;
-    the cache follows ``perception.cache`` otherwise.
+    Without an explicit ``perception``, the observer builds one with the region cache on and
+    the ``ocr`` engine (default ``hybrid``: OpenCV for the numeric HUD fields, Tesseract for the
+    rest and as fallback; ``tesseract`` for Tesseract only). An explicit ``perception`` keeps its
+    own cache and OCR engine.
     """
 
     def __init__(
@@ -63,10 +66,11 @@ class LiveObserver:
         source: LiveSource | None = None,
         villager_detector: VillagerDetector | None = None,
         profile: PerceptionProfile = FULL,
+        ocr: str = "hybrid",
     ) -> None:
         self.guard = guard
         self.profile = profile
-        self.perception = perception or Perception(cache=True)
+        self.perception = perception or Perception(ocr=make_ocr(ocr), cache=True)
         self.detector = detector or TownCenterDetector()
         self.source = source or LiveSource()
         self.villager_detector = villager_detector or VillagerDetector()
