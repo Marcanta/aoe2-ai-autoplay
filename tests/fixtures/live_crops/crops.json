@@ -1,0 +1,1052 @@
+{
+ "description": "Numeric HUD crops from a live skirmish (2026-11-17, 1680x1050, French UI), values checked against the screenshots. Raw region crops: the build applies white_only to idle_count.",
+ "crops": {
+  "tc_hybrid_frame_0001_wood.png": {
+   "field": "wood",
+   "kind": "digits",
+   "value": 9900,
+   "source": "tc_hybrid/frame_0001.png"
+  },
+  "tc_hybrid_frame_0001_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 9971,
+   "source": "tc_hybrid/frame_0001.png"
+  },
+  "tc_hybrid_frame_0001_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    12,
+    35
+   ],
+   "source": "tc_hybrid/frame_0001.png"
+  },
+  "tc_hybrid_frame_0001_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 1827,
+   "source": "tc_hybrid/frame_0001.png"
+  },
+  "tc_hybrid_frame_0001_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 6,
+   "source": "tc_hybrid/frame_0001.png"
+  },
+  "tc_hybrid_frame_0002_wood.png": {
+   "field": "wood",
+   "kind": "digits",
+   "value": 9900,
+   "source": "tc_hybrid/frame_0002.png"
+  },
+  "tc_hybrid_frame_0002_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    12,
+    45
+   ],
+   "source": "tc_hybrid/frame_0002.png"
+  },
+  "tc_hybrid_frame_0002_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 6,
+   "source": "tc_hybrid/frame_0002.png"
+  },
+  "tc_hybrid_frame_0003_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    13,
+    55
+   ],
+   "source": "tc_hybrid/frame_0003.png"
+  },
+  "tc_hybrid_frame_0003_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 7,
+   "source": "tc_hybrid/frame_0003.png"
+  },
+  "tc_hybrid_frame_0004_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 13,
+   "source": "tc_hybrid/frame_0004.png"
+  },
+  "tc_hybrid_frame_0005_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 9821,
+   "source": "tc_hybrid/frame_0005.png"
+  },
+  "tc_hybrid_frame_0005_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    15,
+    60
+   ],
+   "source": "tc_hybrid/frame_0005.png"
+  },
+  "tc_hybrid_frame_0005_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 14,
+   "source": "tc_hybrid/frame_0005.png"
+  },
+  "tc_hybrid_frame_0007_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    16,
+    60
+   ],
+   "source": "tc_hybrid/frame_0007.png"
+  },
+  "tc_hybrid_frame_0007_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2029,
+   "source": "tc_hybrid/frame_0007.png"
+  },
+  "tc_hybrid_frame_0007_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 15,
+   "source": "tc_hybrid/frame_0007.png"
+  },
+  "tc_hybrid_frame_0008_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    17,
+    60
+   ],
+   "source": "tc_hybrid/frame_0008.png"
+  },
+  "tc_hybrid_frame_0008_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 16,
+   "source": "tc_hybrid/frame_0008.png"
+  },
+  "tc_hybrid_frame_0009_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 9621,
+   "source": "tc_hybrid/frame_0009.png"
+  },
+  "tc_hybrid_frame_0009_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    18,
+    60
+   ],
+   "source": "tc_hybrid/frame_0009.png"
+  },
+  "tc_hybrid_frame_0009_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 17,
+   "source": "tc_hybrid/frame_0009.png"
+  },
+  "tc_hybrid_frame_0010_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    19,
+    60
+   ],
+   "source": "tc_hybrid/frame_0010.png"
+  },
+  "tc_hybrid_frame_0010_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 18,
+   "source": "tc_hybrid/frame_0010.png"
+  },
+  "tc_hybrid_frame_0011_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    20,
+    60
+   ],
+   "source": "tc_hybrid/frame_0011.png"
+  },
+  "tc_hybrid_frame_0011_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 19,
+   "source": "tc_hybrid/frame_0011.png"
+  },
+  "tc_hybrid_frame_0012_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    21,
+    60
+   ],
+   "source": "tc_hybrid/frame_0012.png"
+  },
+  "tc_hybrid_frame_0012_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 20,
+   "source": "tc_hybrid/frame_0012.png"
+  },
+  "tc_hybrid_frame_0013_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 9421,
+   "source": "tc_hybrid/frame_0013.png"
+  },
+  "tc_hybrid_frame_0013_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    22,
+    60
+   ],
+   "source": "tc_hybrid/frame_0013.png"
+  },
+  "tc_hybrid_frame_0013_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2193,
+   "source": "tc_hybrid/frame_0013.png"
+  },
+  "tc_hybrid_frame_0013_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 21,
+   "source": "tc_hybrid/frame_0013.png"
+  },
+  "tc_hybrid_frame_0014_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    23,
+    60
+   ],
+   "source": "tc_hybrid/frame_0014.png"
+  },
+  "tc_hybrid_frame_0014_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 22,
+   "source": "tc_hybrid/frame_0014.png"
+  },
+  "tc_hybrid_frame_0015_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    24,
+    60
+   ],
+   "source": "tc_hybrid/frame_0015.png"
+  },
+  "tc_hybrid_frame_0015_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 23,
+   "source": "tc_hybrid/frame_0015.png"
+  },
+  "tc_hybrid_frame_0016_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    25,
+    60
+   ],
+   "source": "tc_hybrid/frame_0016.png"
+  },
+  "tc_hybrid_frame_0016_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 24,
+   "source": "tc_hybrid/frame_0016.png"
+  },
+  "tc_hybrid_frame_0017_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 9221,
+   "source": "tc_hybrid/frame_0017.png"
+  },
+  "tc_hybrid_frame_0017_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    26,
+    60
+   ],
+   "source": "tc_hybrid/frame_0017.png"
+  },
+  "tc_hybrid_frame_0017_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 25,
+   "source": "tc_hybrid/frame_0017.png"
+  },
+  "tc_hybrid_frame_0018_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    27,
+    60
+   ],
+   "source": "tc_hybrid/frame_0018.png"
+  },
+  "tc_hybrid_frame_0018_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 26,
+   "source": "tc_hybrid/frame_0018.png"
+  },
+  "tc_hybrid_frame_0019_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    28,
+    60
+   ],
+   "source": "tc_hybrid/frame_0019.png"
+  },
+  "tc_hybrid_frame_0019_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2353,
+   "source": "tc_hybrid/frame_0019.png"
+  },
+  "tc_hybrid_frame_0019_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 27,
+   "source": "tc_hybrid/frame_0019.png"
+  },
+  "tc_hybrid_frame_0020_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    29,
+    60
+   ],
+   "source": "tc_hybrid/frame_0020.png"
+  },
+  "tc_hybrid_frame_0020_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 28,
+   "source": "tc_hybrid/frame_0020.png"
+  },
+  "tc_hybrid_frame_0021_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 9021,
+   "source": "tc_hybrid/frame_0021.png"
+  },
+  "tc_hybrid_frame_0021_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    30,
+    60
+   ],
+   "source": "tc_hybrid/frame_0021.png"
+  },
+  "tc_hybrid_frame_0021_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 29,
+   "source": "tc_hybrid/frame_0021.png"
+  },
+  "tc_hybrid_frame_0022_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    31,
+    60
+   ],
+   "source": "tc_hybrid/frame_0022.png"
+  },
+  "tc_hybrid_frame_0022_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 30,
+   "source": "tc_hybrid/frame_0022.png"
+  },
+  "tc_hybrid_frame_0023_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    32,
+    60
+   ],
+   "source": "tc_hybrid/frame_0023.png"
+  },
+  "tc_hybrid_frame_0023_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 31,
+   "source": "tc_hybrid/frame_0023.png"
+  },
+  "tc_hybrid_frame_0024_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    33,
+    60
+   ],
+   "source": "tc_hybrid/frame_0024.png"
+  },
+  "tc_hybrid_frame_0024_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 32,
+   "source": "tc_hybrid/frame_0024.png"
+  },
+  "tc_hybrid_frame_0025_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 8821,
+   "source": "tc_hybrid/frame_0025.png"
+  },
+  "tc_hybrid_frame_0025_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    34,
+    60
+   ],
+   "source": "tc_hybrid/frame_0025.png"
+  },
+  "tc_hybrid_frame_0025_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2516,
+   "source": "tc_hybrid/frame_0025.png"
+  },
+  "tc_hybrid_frame_0025_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 33,
+   "source": "tc_hybrid/frame_0025.png"
+  },
+  "tc_hybrid_frame_0026_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    35,
+    60
+   ],
+   "source": "tc_hybrid/frame_0026.png"
+  },
+  "tc_hybrid_frame_0026_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 34,
+   "source": "tc_hybrid/frame_0026.png"
+  },
+  "tc_hybrid_frame_0027_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    36,
+    60
+   ],
+   "source": "tc_hybrid/frame_0027.png"
+  },
+  "tc_hybrid_frame_0027_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 35,
+   "source": "tc_hybrid/frame_0027.png"
+  },
+  "tc_hybrid_frame_0028_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    37,
+    60
+   ],
+   "source": "tc_hybrid/frame_0028.png"
+  },
+  "tc_hybrid_frame_0028_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 36,
+   "source": "tc_hybrid/frame_0028.png"
+  },
+  "tc_hybrid_frame_0029_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 8621,
+   "source": "tc_hybrid/frame_0029.png"
+  },
+  "tc_hybrid_frame_0029_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    38,
+    60
+   ],
+   "source": "tc_hybrid/frame_0029.png"
+  },
+  "tc_hybrid_frame_0029_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 37,
+   "source": "tc_hybrid/frame_0029.png"
+  },
+  "tc_hybrid_frame_0030_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    39,
+    60
+   ],
+   "source": "tc_hybrid/frame_0030.png"
+  },
+  "tc_hybrid_frame_0030_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 38,
+   "source": "tc_hybrid/frame_0030.png"
+  },
+  "tc_hybrid_frame_0031_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    40,
+    60
+   ],
+   "source": "tc_hybrid/frame_0031.png"
+  },
+  "tc_hybrid_frame_0031_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2680,
+   "source": "tc_hybrid/frame_0031.png"
+  },
+  "tc_hybrid_frame_0031_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 39,
+   "source": "tc_hybrid/frame_0031.png"
+  },
+  "tc_hybrid_frame_0033_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    41,
+    60
+   ],
+   "source": "tc_hybrid/frame_0033.png"
+  },
+  "tc_hybrid_frame_0033_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 40,
+   "source": "tc_hybrid/frame_0033.png"
+  },
+  "tc_tesseract_frame_0001_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 8421,
+   "source": "tc_tesseract/frame_0001.png"
+  },
+  "tc_tesseract_frame_0001_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    42,
+    60
+   ],
+   "source": "tc_tesseract/frame_0001.png"
+  },
+  "tc_tesseract_frame_0001_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 41,
+   "source": "tc_tesseract/frame_0001.png"
+  },
+  "tc_tesseract_frame_0002_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    43,
+    60
+   ],
+   "source": "tc_tesseract/frame_0002.png"
+  },
+  "tc_tesseract_frame_0002_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 42,
+   "source": "tc_tesseract/frame_0002.png"
+  },
+  "tc_tesseract_frame_0003_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    44,
+    60
+   ],
+   "source": "tc_tesseract/frame_0003.png"
+  },
+  "tc_tesseract_frame_0003_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 43,
+   "source": "tc_tesseract/frame_0003.png"
+  },
+  "tc_tesseract_frame_0004_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    45,
+    60
+   ],
+   "source": "tc_tesseract/frame_0004.png"
+  },
+  "tc_tesseract_frame_0004_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2841,
+   "source": "tc_tesseract/frame_0004.png"
+  },
+  "tc_tesseract_frame_0004_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 44,
+   "source": "tc_tesseract/frame_0004.png"
+  },
+  "tc_tesseract_frame_0005_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 8221,
+   "source": "tc_tesseract/frame_0005.png"
+  },
+  "tc_tesseract_frame_0005_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    46,
+    60
+   ],
+   "source": "tc_tesseract/frame_0005.png"
+  },
+  "tc_tesseract_frame_0005_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 45,
+   "source": "tc_tesseract/frame_0005.png"
+  },
+  "tc_tesseract_frame_0006_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    47,
+    60
+   ],
+   "source": "tc_tesseract/frame_0006.png"
+  },
+  "tc_tesseract_frame_0006_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 46,
+   "source": "tc_tesseract/frame_0006.png"
+  },
+  "tc_tesseract_frame_0007_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    48,
+    60
+   ],
+   "source": "tc_tesseract/frame_0007.png"
+  },
+  "tc_tesseract_frame_0007_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 47,
+   "source": "tc_tesseract/frame_0007.png"
+  },
+  "tc_tesseract_frame_0008_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    49,
+    60
+   ],
+   "source": "tc_tesseract/frame_0008.png"
+  },
+  "tc_tesseract_frame_0008_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 48,
+   "source": "tc_tesseract/frame_0008.png"
+  },
+  "tc_tesseract_frame_0009_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    50,
+    60
+   ],
+   "source": "tc_tesseract/frame_0009.png"
+  },
+  "tc_tesseract_frame_0009_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 49,
+   "source": "tc_tesseract/frame_0009.png"
+  },
+  "tc_tesseract_frame_0010_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 8021,
+   "source": "tc_tesseract/frame_0010.png"
+  },
+  "tc_tesseract_frame_0010_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 2995,
+   "source": "tc_tesseract/frame_0010.png"
+  },
+  "tc_tesseract_frame_0011_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    51,
+    60
+   ],
+   "source": "tc_tesseract/frame_0011.png"
+  },
+  "tc_tesseract_frame_0011_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 50,
+   "source": "tc_tesseract/frame_0011.png"
+  },
+  "tc_tesseract_frame_0012_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    52,
+    60
+   ],
+   "source": "tc_tesseract/frame_0012.png"
+  },
+  "tc_tesseract_frame_0012_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 51,
+   "source": "tc_tesseract/frame_0012.png"
+  },
+  "tc_tesseract_frame_0013_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    53,
+    60
+   ],
+   "source": "tc_tesseract/frame_0013.png"
+  },
+  "tc_tesseract_frame_0013_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 52,
+   "source": "tc_tesseract/frame_0013.png"
+  },
+  "tc_tesseract_frame_0014_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 7821,
+   "source": "tc_tesseract/frame_0014.png"
+  },
+  "tc_tesseract_frame_0014_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    54,
+    60
+   ],
+   "source": "tc_tesseract/frame_0014.png"
+  },
+  "tc_tesseract_frame_0014_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 53,
+   "source": "tc_tesseract/frame_0014.png"
+  },
+  "tc_tesseract_frame_0015_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    55,
+    60
+   ],
+   "source": "tc_tesseract/frame_0015.png"
+  },
+  "tc_tesseract_frame_0015_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 54,
+   "source": "tc_tesseract/frame_0015.png"
+  },
+  "tc_tesseract_frame_0016_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    56,
+    60
+   ],
+   "source": "tc_tesseract/frame_0016.png"
+  },
+  "tc_tesseract_frame_0016_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 3150,
+   "source": "tc_tesseract/frame_0016.png"
+  },
+  "tc_tesseract_frame_0016_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 55,
+   "source": "tc_tesseract/frame_0016.png"
+  },
+  "tc_tesseract_frame_0017_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    57,
+    60
+   ],
+   "source": "tc_tesseract/frame_0017.png"
+  },
+  "tc_tesseract_frame_0017_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 56,
+   "source": "tc_tesseract/frame_0017.png"
+  },
+  "tc_tesseract_frame_0018_food.png": {
+   "field": "food",
+   "kind": "digits",
+   "value": 7621,
+   "source": "tc_tesseract/frame_0018.png"
+  },
+  "tc_tesseract_frame_0018_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    58,
+    60
+   ],
+   "source": "tc_tesseract/frame_0018.png"
+  },
+  "tc_tesseract_frame_0018_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 57,
+   "source": "tc_tesseract/frame_0018.png"
+  },
+  "tc_tesseract_frame_0019_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    59,
+    60
+   ],
+   "source": "tc_tesseract/frame_0019.png"
+  },
+  "tc_tesseract_frame_0019_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 58,
+   "source": "tc_tesseract/frame_0019.png"
+  },
+  "tc_tesseract_frame_0020_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    59,
+    60
+   ],
+   "source": "tc_tesseract/frame_0020.png"
+  },
+  "tc_tesseract_frame_0021_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    60,
+    60
+   ],
+   "source": "tc_tesseract/frame_0021.png"
+  },
+  "tc_tesseract_frame_0021_idle_count.png": {
+   "field": "idle_count",
+   "kind": "digits",
+   "value": 59,
+   "source": "tc_tesseract/frame_0021.png"
+  },
+  "tc_tesseract_frame_0022_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 3309,
+   "source": "tc_tesseract/frame_0022.png"
+  },
+  "tc_tesseract_frame_0028_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 3470,
+   "source": "tc_tesseract/frame_0028.png"
+  },
+  "tc_tesseract_frame_0034_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 3631,
+   "source": "tc_tesseract/frame_0034.png"
+  },
+  "idle_hybrid_frame_0002_population.png": {
+   "field": "population",
+   "kind": "fraction",
+   "value": [
+    60,
+    60
+   ],
+   "source": "idle_hybrid/frame_0002.png"
+  },
+  "idle_hybrid_frame_0004_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 3773,
+   "source": "idle_hybrid/frame_0004.png"
+  },
+  "idle_hybrid_frame_0010_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 3937,
+   "source": "idle_hybrid/frame_0010.png"
+  },
+  "idle_hybrid_frame_0016_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 4094,
+   "source": "idle_hybrid/frame_0016.png"
+  },
+  "idle_hybrid_frame_0022_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 4255,
+   "source": "idle_hybrid/frame_0022.png"
+  },
+  "idle_hybrid_frame_0028_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 4415,
+   "source": "idle_hybrid/frame_0028.png"
+  },
+  "idle_hybrid_frame_0034_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 4584,
+   "source": "idle_hybrid/frame_0034.png"
+  },
+  "idle_hybrid_frame_0040_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 4745,
+   "source": "idle_hybrid/frame_0040.png"
+  },
+  "idle_hybrid_frame_0046_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 4906,
+   "source": "idle_hybrid/frame_0046.png"
+  },
+  "idle_hybrid_frame_0052_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 5067,
+   "source": "idle_hybrid/frame_0052.png"
+  },
+  "idle_hybrid_frame_0058_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 5228,
+   "source": "idle_hybrid/frame_0058.png"
+  },
+  "idle_hybrid_frame_0064_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 5389,
+   "source": "idle_hybrid/frame_0064.png"
+  },
+  "idle_tesseract_frame_0006_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 5545,
+   "source": "idle_tesseract/frame_0006.png"
+  },
+  "idle_tesseract_frame_0012_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 5712,
+   "source": "idle_tesseract/frame_0012.png"
+  },
+  "idle_tesseract_frame_0018_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 5868,
+   "source": "idle_tesseract/frame_0018.png"
+  },
+  "idle_tesseract_frame_0024_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6030,
+   "source": "idle_tesseract/frame_0024.png"
+  },
+  "idle_tesseract_frame_0030_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6193,
+   "source": "idle_tesseract/frame_0030.png"
+  },
+  "idle_tesseract_frame_0036_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6355,
+   "source": "idle_tesseract/frame_0036.png"
+  },
+  "idle_tesseract_frame_0042_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6517,
+   "source": "idle_tesseract/frame_0042.png"
+  },
+  "idle_tesseract_frame_0048_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6677,
+   "source": "idle_tesseract/frame_0048.png"
+  },
+  "idle_tesseract_frame_0054_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6839,
+   "source": "idle_tesseract/frame_0054.png"
+  },
+  "idle_tesseract_frame_0060_game_time.png": {
+   "field": "game_time",
+   "kind": "clock",
+   "value": 6998,
+   "source": "idle_tesseract/frame_0060.png"
+  }
+ }
+}

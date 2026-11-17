@@ -16,8 +16,9 @@ A read counts as *exact* when it is accepted (confidence >= the detectors'
 is accepted and differs, *unknown* otherwise. *Negatives* are crops that must
 not produce a value (the main menu, fields labelled ``null``).
 
-``opencv (leave-one-out)`` rebuilds the templates without the frame being read,
-so no glyph is matched against a template cut from its own screenshot.
+``opencv (leave-one-out)`` rebuilds the templates without the frame being read
+(plus the live-game crops of ``tests/fixtures/live_crops``, as the committed
+templates), so no glyph is matched against a template cut from its own screenshot.
 ``--extra DIR`` adds an agreement check on unlabelled screenshots (e.g. the
 live-run captures): fields where both engines give a value must agree.
 """
@@ -40,6 +41,7 @@ from aoe2_ai.perception.digit_recognizer import (
     DigitRecognizer,
     HybridOcr,
     build_templates,
+    extra_crops,
     labelled_crops,
 )
 from aoe2_ai.perception.ocr import OcrEngine, TesseractOcr
@@ -187,8 +189,9 @@ def run(labels: dict, frames_dir: Path, repeat: int, extra: Path | None) -> dict
 
     # Leave one frame out: templates without the frame being read.
     loo = Tally()
+    live = list(extra_crops(frames_dir.parent / "live_crops" / "crops.json"))
     for frame_name in sorted({p[0] for p in positives}):
-        held_out = DigitRecognizer(build_templates(labels, frames_dir, exclude=[frame_name]))
+        held_out = DigitRecognizer(build_templates(labels, frames_dir, exclude=[frame_name], extra=live))
         engine = OpenCvOnly(held_out)
         for name, fname, kind, crop, want in positives:
             if name == frame_name:
