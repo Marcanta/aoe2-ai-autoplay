@@ -3,6 +3,7 @@
     python -m aoe2_ai.benchmark                       # full observation, every labelled frame, no cache
     python -m aoe2_ai.benchmark --profile town_center --cache
     python -m aoe2_ai.benchmark --compare --json docs/benchmarks/after.json   # every profile, cache off and on
+    python -m aoe2_ai.benchmark --ocr hybrid          # OpenCV digits first, Tesseract fallback
 
 Each observation runs exactly what a controller's ``LiveObserver.observe`` runs
 (HUD perception, Town Center panel, idle-villager button, villager selection,
@@ -185,19 +186,43 @@ def run_steady(labels: dict, frames_dir: Path, repeat: int, perception: Percepti
     return run
 
 
+def make_ocr(name: str):
+    """``tesseract`` (the default engine) or ``hybrid`` (OpenCV digits, Tesseract fallback)."""
+    from aoe2_ai.perception.ocr import TesseractOcr
+
+    if name == "tesseract":
+        return TesseractOcr()
+    if name == "hybrid":
+        from aoe2_ai.perception.digit_recognizer import HybridOcr
+
+        return HybridOcr(TesseractOcr())
+    raise ValueError(f"unknown OCR engine {name!r}")
+
+
 def benchmark(labels: dict, sequence: list[str], frames_dir: Path, repeat: int, profile: PerceptionProfile,
-              cache: bool, scenarios: tuple[str, ...]) -> dict[str, Any]:
-    perception = Perception(cache=cache)
+              cache: bool, scenarios: tuple[str, ...], ocr: str = "tesseract") -> dict[str, Any]:
+    engine = make_ocr(ocr)
+    perception = Perception(ocr=engine, cache=cache)
+    stats = getattr(engine, "stats", None)  # HybridOcr: numeric reads answered by OpenCV / sent to Tesseract
+    runs = {
+        "cold": lambda: run_cold(labels, frames_dir, repeat, perception, profile),
+        "sequence": lambda: run_sequence(labels, sequence, frames_dir, repeat, perception, profile),
+        "steady": lambda: run_steady(labels, frames_dir, repeat, perception, profile),
+    }
     results: dict[str, Any] = {}
     try:
         # Warm-up: the first Tesseract launches and thread start-up are slower.
         run_cold({n: labels[n] for n in sorted(labels)[:1]}, frames_dir, 1, perception, profile)
-        if "cold" in scenarios:
-            results["cold"] = run_cold(labels, frames_dir, repeat, perception, profile).summary()
-        if "sequence" in scenarios and sequence:
-            results["sequence"] = run_sequence(labels, sequence, frames_dir, repeat, perception, profile).summary()
-        if "steady" in scenarios:
-            results["steady"] = run_steady(labels, frames_dir, repeat, perception, profile).summary()
+        for scenario, run in runs.items():
+            if scenario not in scenarios or (scenario == "sequence" and not sequence):
+                continue
+            before = (stats.opencv, stats.fallback) if stats is not None else (0, 0)
+            results[scenario] = run().summary()
+            if stats is not None:
+                opencv, fallback = stats.opencv - before[0], stats.fallback - before[1]
+                total = opencv + fallback
+                results[scenario]["digit_reads"] = {"opencv": opencv, "fallback": fallback,
+                                                    "fallback_rate": fallback / total if total else 0.0}
     finally:
         perception.close()
     return results
@@ -206,10 +231,12 @@ def benchmark(labels: dict, sequence: list[str], frames_dir: Path, repeat: int, 
 def format_summary(name: str, s: dict[str, Any]) -> str:
     c = s["correctness"]
     stages = "  ".join(f"{k} {v:.0f}" for k, v in s["stage_mean_ms"].items())
+    d = s.get("digit_reads")
+    fallback = f"  digit fallback {d['fallback']}/{d['opencv'] + d['fallback']}" if d else ""
     return (
         f"{name:<34} n={s['observations']:<3} mean {s['mean_ms']:7.0f} ms  median {s['median_ms']:7.0f}  p95 {s['p95_ms']:7.0f}  "
         f"launches {s['launches_mean']:5.1f} (max {s['launches_max']})  "
-        f"ok {c.get('ok', 0)} missed {c.get('missed', 0)} unknown {c.get('unknown', 0)} wrong {c.get('wrong', 0)}\n"
+        f"ok {c.get('ok', 0)} missed {c.get('missed', 0)} unknown {c.get('unknown', 0)} wrong {c.get('wrong', 0)}{fallback}\n"
         f"{'':<34} stage means (ms, summed over threads): {stages}"
     )
 
@@ -223,6 +250,8 @@ def main() -> None:
     parser.add_argument("--profile", choices=sorted(PROFILES), default="full")
     parser.add_argument("--cache", action="store_true", help="turn the region cache on")
     parser.add_argument("--compare", action="store_true", help="every profile, cache off and on (ignores --profile/--cache)")
+    parser.add_argument("--ocr", choices=("tesseract", "hybrid"), default="tesseract",
+                        help="OCR engine: Tesseract only (default) or OpenCV digits with Tesseract fallback")
     parser.add_argument("--json", type=Path, help="write the summaries to this file")
     args = parser.parse_args()
 
@@ -234,8 +263,9 @@ def main() -> None:
     configs = [(p, c) for p in PROFILES for c in (False, True)] if args.compare else [(args.profile, args.cache)]
     results: dict[str, Any] = {}
     for profile_name, cache in configs:
-        config = f"{profile_name}{' +cache' if cache else ''}"
-        runs = benchmark(labels, sequence, args.frames, args.repeat, PerceptionProfile.named(profile_name), cache, scenarios)
+        config = f"{profile_name}{' +cache' if cache else ''}{' [hybrid]' if args.ocr == 'hybrid' else ''}"
+        runs = benchmark(labels, sequence, args.frames, args.repeat, PerceptionProfile.named(profile_name), cache,
+                         scenarios, args.ocr)
         for scenario, summary in runs.items():
             results[f"{config} / {scenario}"] = summary
             print(format_summary(f"{config} / {scenario}", summary), flush=True)
