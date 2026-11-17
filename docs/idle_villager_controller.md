@@ -166,8 +166,10 @@ It works in **passes**:
   thumbnail; the pass then ends early (safe side: fewer selections, never repeats).
 - Regions and the build-button template were measured at 1680x1050 with the French UI. Other 16:10
   resolutions scale; other aspect ratios, UI mods or a different command-grid layout need recalibrating.
-- An observation takes ~1.3 s live (mean, P95 ~1.5 s) with the idle-villager profile and the region
-  cache, with `HybridOcr` and with Tesseract only alike: the selected-object name is read by Tesseract on
-  every observation and sets the pace. What `HybridOcr` changes here is the count: Tesseract reads
+- An observation took ~1.3 s live (mean, P95 ~1.5 s) before the Tesseract pass memo, with `HybridOcr` and
+  with Tesseract only alike: the selected-object name was read by Tesseract on every observation. With the
+  memo, a replay of the live frames takes 61 ms mean (P95 219 ms); see
+  [perception_performance.md](perception_performance.md#tesseract-pass-memo). Not yet measured in a live
+  game. What `HybridOcr` changes here is the count: Tesseract reads
   counts 50–58 on the button as 30–38 (accepted as valid), OpenCV reads them right
   (see [live_validation.md](live_validation.md)).

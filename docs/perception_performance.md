@@ -169,6 +169,42 @@ A `LiveObserver` that builds its own `Perception` turns it on. Plain
   trusted. The controllers only act on VALID values, so their behaviour does not
   depend on it.
 
+## Tesseract pass memo
+
+The region cache is bit-exact, and the selected-object panel is not: between two
+observations the `selection_name` crop changes by one grey level in a few dozen
+pixels, so the `selection` slot (name + HP) misses on almost every observation and
+Tesseract is launched 4–5 times (~1 s) to read the same name again.
+
+`TesseractOcr(memo=N)` remembers the last `N` single-pass results keyed by the
+**binarised image Tesseract is given** (the output of `preprocess`, digest plus
+shape) and the Tesseract config (`--psm`, whitelist). Tesseract sees nothing else,
+so a hit returns exactly what a launch would have returned; one grey level of
+noise almost never crosses a binarisation threshold, so the binarised image (and
+the key) stays the same. A changed name, HP or config gives a different key and a
+real launch. The vote between passes, the confidence and the detectors are
+unchanged.
+
+The controllers turn it on (`LiveObserver` builds its OCR with
+`make_ocr(..., memo=OCR_MEMO)`, 512 entries); `make_ocr` and `TesseractOcr` keep it
+off by default, so the benchmarks still time real launches. `--metrics` reports
+`memo_hits_total` (launches avoided).
+
+Replay of the live-validation frames (2026-11-17 skirmish, saved every 15 s, read
+in order with the controllers' profile, `HybridOcr` and the region cache; the
+panel detectors and screen capture are not included):
+
+| run | memo | mean | P95 | Tesseract launches / observation |
+|---|---|---|---|---|
+| Town Center (33 frames) | off | 1040 ms | 1508 ms | 3.91 |
+| Town Center (33 frames) | on | 135 ms | 935 ms | 0.52 |
+| idle villager (64 frames) | off | 1264 ms | 1798 ms | 4.97 |
+| idle villager (64 frames) | on | 61 ms | 219 ms | 0.19 |
+
+The selection readings are identical with and without the memo on every frame.
+What is left is a real change of selection (Town Center ↔ villager, a different
+HP), which still costs a full read: that is the Town Center P95.
+
 ## Not done here
 
 * Digit template matching (out of scope for this change).

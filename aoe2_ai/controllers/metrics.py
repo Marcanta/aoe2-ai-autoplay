@@ -13,7 +13,7 @@ Records, without changing what the controller does:
   JSON, so each action can be checked by eye afterwards.
 
 ``summary.json`` holds latency mean / median / p95 (all observations and in-game
-only), launches per observation, OpenCV / fallback counts, UNKNOWN field readings
+only), launches per observation, Tesseract pass-memo hits, OpenCV / fallback counts, UNKNOWN field readings
 and outcome counts; ``observations.jsonl`` and
 ``cycles.jsonl`` the raw records.
 """
@@ -28,6 +28,7 @@ from typing import Any
 
 import cv2
 
+from aoe2_ai.perception.metrics import ocr_memo_hits
 from aoe2_ai.perception.profile import NOT_REQUESTED
 
 from .observation import Observation
@@ -64,6 +65,8 @@ class LiveMetrics:
         self._last_frame_t: float | None = None
         self._frames = 0
         self._ocr_stats = None  # HybridOcr.stats of the observer, if any
+        self._ocr = None  # the observer's OCR engine
+        self._memo_start: int | None = None
         self.directory.mkdir(parents=True, exist_ok=True)
         self.observations: list[dict[str, Any]] = []
         self.cycles: list[dict[str, Any]] = []
@@ -75,6 +78,7 @@ class LiveMetrics:
         observe, cycle = observer.observe, controller.cycle
         ocr = getattr(getattr(observer, "perception", None), "ocr", None)
         self._ocr_stats = getattr(ocr, "stats", None)
+        self._ocr, self._memo_start = ocr, ocr_memo_hits(ocr)
 
         def recorded_observe() -> Observation:
             before = self._ocr_counts()
@@ -186,6 +190,8 @@ class LiveMetrics:
             "observations_in_game": latency_summary(game_ms),
             "launches_mean": statistics.fmean(launches) if launches else 0.0,
             "launches_total": sum(launches),
+            # Tesseract passes answered from the pass memo (launches avoided), None without a memo.
+            "memo_hits_total": None if self._memo_start is None else ocr_memo_hits(self._ocr) - self._memo_start,
             "digit_reads": None if not digits else {
                 "opencv": opencv, "fallback": fallback,
                 "fallback_rate": fallback / (opencv + fallback) if opencv + fallback else 0.0,

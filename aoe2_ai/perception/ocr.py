@@ -9,10 +9,11 @@ produces scores low and is rejected by the detectors.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
 import threading
-from collections import Counter
+from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
@@ -125,6 +126,7 @@ class TesseractOcr:
         dark_passes: tuple[Pass, ...] = DARK_PASSES,
         scale: int = 4,
         early_stop: int = 2,
+        memo: int = 0,
     ) -> None:
         import pytesseract
 
@@ -143,6 +145,11 @@ class TesseractOcr:
         self.early_stop = max(2, early_stop)
         self._launch_lock = threading.Lock()
         self.launches = 0  # Tesseract process launches since creation (one per pass actually run)
+        # Memo of single-pass results keyed by the exact binarised image Tesseract would get
+        # (see _read_once). Off (0) by default: benchmarks time real launches.
+        self.memo_size = max(0, memo)
+        self._memo: OrderedDict[tuple, tuple[str, float]] = OrderedDict()
+        self.memo_hits = 0
 
     @property
     def config_key(self) -> tuple:
@@ -150,6 +157,34 @@ class TesseractOcr:
         return ("tesseract", self._tess.pytesseract.tesseract_cmd, self.lang, self.passes, self.dark_passes, self.scale, self.early_stop)
 
     def _read_once(self, image: np.ndarray, config: str) -> tuple[str, float]:
+        """One Tesseract pass on a preprocessed image.
+
+        With ``memo`` on, a pass whose binarised image is bit-identical to one already read
+        with the same config returns the stored ``(text, confidence)`` without a launch.
+        Tesseract only sees that image, so the result is the one a launch would give;
+        the screen crop itself may differ (a grey level of noise rarely survives the
+        threshold), which is why this hits where the region cache misses.
+        """
+        key = None
+        if self.memo_size:
+            digest = hashlib.blake2b(np.ascontiguousarray(image).tobytes(), digest_size=16).digest()
+            key = (config, image.shape, digest)
+            with self._launch_lock:
+                hit = self._memo.get(key)
+                if hit is not None:
+                    self._memo.move_to_end(key)
+                    self.memo_hits += 1
+                    return hit
+        result = self._launch(image, config)
+        if key is not None:
+            with self._launch_lock:
+                self._memo[key] = result
+                self._memo.move_to_end(key)
+                while len(self._memo) > self.memo_size:
+                    self._memo.popitem(last=False)
+        return result
+
+    def _launch(self, image: np.ndarray, config: str) -> tuple[str, float]:
         with self._launch_lock:
             self.launches += 1
         data = self._tess.image_to_data(image, lang=self.lang, config=config, output_type=self._tess.Output.DICT)

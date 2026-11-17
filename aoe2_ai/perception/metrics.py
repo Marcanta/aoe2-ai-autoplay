@@ -80,3 +80,12 @@ def ocr_launches(engine) -> int | None:
     """Tesseract process launches so far, when the engine counts them."""
     launches = getattr(engine, "launches", None)
     return launches if isinstance(launches, int) else None
+
+
+def ocr_memo_hits(engine) -> int | None:
+    """Tesseract passes answered from the memo so far (launches avoided), when the engine has one."""
+    for e in (engine, getattr(engine, "fallback", None), getattr(engine, "engine", None)):
+        hits = getattr(e, "memo_hits", None) if e is not None else None
+        if isinstance(hits, int):
+            return hits
+    return None
