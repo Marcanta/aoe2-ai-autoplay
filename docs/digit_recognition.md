@@ -80,7 +80,10 @@ a textured grey plate).
    trimmed.
 4. **Touching glyphs.** A blob wider than any digit (width > 0.95 × height) is
    cut at low-ink columns, up to three parts. A cut is kept only if every part
-   matches a template confidently; otherwise UNKNOWN.
+   matches a template confidently *and* is as wide, for its height, as that
+   character's template samples (within 0.75×–1.33× of their range); otherwise
+   UNKNOWN. The width check stops a cut through one digit from passing as a
+   narrow one (half of an overlapped `8` matched a `3` at 0.89: `89` → `139`).
 5. **Normalisation.** Each glyph is scaled to 20 px high *keeping its aspect
    ratio* (a `1` stays narrow; different digit widths stay distinguishable) and
    its intensity rescaled to 0..1, so brightness, tint and resolution drop out.
@@ -93,6 +96,9 @@ a textured grey plate).
    digits grouped in pairs by the spacing of the digit centres (the clock is
    drawn on a fixed pitch and the colons widen the step between pairs), minutes
    and seconds < 60. The reading's confidence is its weakest glyph's score.
+   Glyph boxes that overlap by more than 1 px are one glyph counted twice (a
+   digit broken in two pieces, each joined to a neighbour: `457` → `4557`):
+   UNKNOWN.
 
 A font with a character that has no template (e.g. a template set built without
 a `9`) is not used at all: its fields are UNKNOWN and go to Tesseract, because a
@@ -104,12 +110,21 @@ per kind are in `KindSpec` / `DEFAULT_KINDS`.
 ### Templates
 
 `aoe2_ai/perception/digit_templates/<font>/<char>_<n>.png` (20x20 normalised
-glyphs, `slash` for `/`, 68 KB in total) are cut from the labelled fixture
-screenshots by `python -m aoe2_ai.perception.digit_recognizer build`: every
-labelled numeric field whose segmentation yields exactly one glyph per expected
+glyphs, `slash` for `/`, 125 KB in total) are cut by
+`python -m aoe2_ai.perception.digit_recognizer build` from:
+
+* the labelled fixture screenshots (`tests/fixtures/frames`, `labels.json`), then
+* the live-game crops (`tests/fixtures/live_crops`, `crops.json`): 149 numeric
+  crops (population, idle count, clock, food, wood) from the live validation
+  skirmish, values checked against the screenshots. They brought the white
+  population `6` from 2 to 7 samples (the `NN/60` fallbacks) and the HUD `9` from
+  1 to 7. `--extra-crops` points the build at another `crops.json`.
+
+Every labelled field whose segmentation yields exactly one glyph per expected
 character contributes its glyphs; near-duplicates (correlation ≥ 0.985) are
 skipped, at most 8 samples per character. A test checks the committed templates
-equal a fresh rebuild.
+equal a fresh rebuild, and that templates built from one half of the live runs
+read every crop of the other half correctly.
 
 ## Results
 
@@ -127,10 +142,15 @@ detectors' rules (confidence ≥ 0.6, the detectors' parsers).
 
 | engine | exact | wrong | unknown | negatives read as a value | mean | median | p95 | Tesseract launches / field |
 |---|---|---|---|---|---|---|---|---|
-| Tesseract | 291 (97.0 %) | 0 | 9 (3.0 %) | 0 | 347 ms | 320 ms | 565 ms | 2.02 |
-| **OpenCV** | **300 (100 %)** | **0** | **0** | **0** | **1.50 ms** | **1.35 ms** | **2.42 ms** | 0 |
-| Hybrid (OpenCV, Tesseract fallback) | 300 (100 %) | 0 | 0 | 0 | 1.42 ms | 1.32 ms | 2.27 ms | 0 |
-| OpenCV, leave-one-frame-out templates | 92 (92 %) | 0 | 8 (8 %) | 0 | | | | |
+| Tesseract | 291 (97.0 %) | 0 | 9 (3.0 %) | 0 | 516 ms | 463 ms | 844 ms | 2.02 |
+| **OpenCV** | **300 (100 %)** | **0** | **0** | **0** | **1.96 ms** | **1.64 ms** | **3.08 ms** | 0 |
+| Hybrid (OpenCV, Tesseract fallback) | 300 (100 %) | 0 | 0 | 0 | 1.97 ms | 1.61 ms | 2.97 ms | 0 |
+| OpenCV, leave-one-frame-out templates | 100 (100 %) | 0 | 0 | 0 | | | | |
+
+Timings are from a run with the game open in the background: every engine is
+~1.3–1.5× slower than in the first measurement (Tesseract 347 → 516 ms,
+OpenCV 1.50 → 1.96 ms). Back to back on the same crops, the old (61 samples)
+and current (109 samples) template sets cost the same, 1.9 vs 1.8 ms per field.
 
 Tesseract fallback rate of the hybrid: **0 / 300** on the labelled fields;
 24 / 24 on the negative crops (the recognizer correctly says UNKNOWN there,
@@ -140,25 +160,34 @@ Per field (exact / unknown / wrong, median latency):
 
 | field | Tesseract | OpenCV |
 |---|---|---|
-| wood, food, gold, stone | 45/0/0 each, 316–322 ms | 45/0/0 each, 1.3 ms |
-| population | 39/**6**/0, 317 ms | 45/0/0, 1.6 ms |
-| game clock | 42/0/0, 330 ms | 42/0/0, 2.3 ms |
-| idle count | 30/**3**/0, 313 ms | 33/0/0, 0.75 ms |
+| wood, food, gold, stone | 45/0/0 each, 442–485 ms | 45/0/0 each, 1.5–1.6 ms |
+| population | 39/**6**/0, 438 ms | 45/0/0, 2.2 ms |
+| game clock | 42/0/0, 464 ms | 42/0/0, 2.4 ms |
+| idle count | 30/**3**/0, 482 ms | 33/0/0, 0.8 ms |
 
 The Tesseract unknowns are its known misses (`_ocr_misses` in the labels): the
 yellow `4/5` population, `7/15`, and the idle count `1`. OpenCV reads them.
 
-**Leave-one-frame-out** rebuilds the templates without the frame being read, so
-no glyph is matched against a template cut from its own screenshot. It gives 0
-wrong; its 8 UNKNOWNs are the two frames holding the *only* sample of a
+**Leave-one-frame-out** rebuilds the templates without the frame being read
+(keeping the live-game crops, which come from another game), so no glyph is
+matched against a template cut from its own screenshot: 100 / 100, 0 wrong.
+Before the live crops it was 92 / 100: the frames holding the *only* sample of a
 character (the HUD `9` in `978`, the clock `9` in `02:59`, the clock `6` in
-`00:00:06`): with that character missing the whole font is refused (see above)
-and the fields go to Tesseract.
+`00:00:06`) left the font without that character, and a font missing a
+character is refused.
 
-**Unlabelled live captures** (`--extra captures`: 43 screenshots from the
+**Live crops held out** (`tests/fixtures/live_crops`, the test
+`test_live_crops_held_out_from_the_templates_are_read_correctly`): templates
+built without one half of the live runs read the other half: 60 / 60 and
+89 / 89, 0 wrong, 0 UNKNOWN. With the templates before this change, 22 of the
+149 live crops were UNKNOWN (21 populations `NN/60`, 1 food); the 198 live
+screenshots now read 1385 / 1385 fields by OpenCV alone (24 UNKNOWN before; those
+screenshots supplied the crops, so the held-out figure is the honest one).
+
+**Unlabelled live captures** (`--extra captures`: 44 screenshots from the
 controller and live-metrics runs, frames where values change between cycles,
-not used to build templates): OpenCV and Tesseract both gave a value for 223
-fields and **agreed on all 223**; OpenCV alone read 10 more (clocks on the
+not used to build templates): OpenCV and Tesseract both gave a value for 229
+fields and **agreed on all 229**; OpenCV alone read 11 more (clocks on the
 red-tinted frame, the yellow population, `food 0`; each checked by eye), and
 Tesseract alone 4: `40` for the idle count on a *grey* button, which shows `0`
 next to the icon. Those 4 are Tesseract misreads (harmless today: the pipeline
@@ -194,11 +223,11 @@ which 23 ms is loading the screenshot.
 
 ## Limitations
 
-* **Small template set.** Templates come from 17 screenshots. The HUD `9` and
-  the clock `1`, `6`, `9` have a single sample each. More labelled frames
-  (especially high resources, 4-digit values, late-game clocks) would make the
-  leave-one-out figure more meaningful; rebuild with the `build` command after
-  labelling them.
+* **Small template set.** Templates come from 17 screenshots and one live
+  skirmish. The clock `1`, `6`, `8`, `9` still have two samples each. More
+  labelled crops (other games, high resources, late-game
+  clocks) would make the leave-one-out figure more meaningful; add them to a
+  `crops.json` and rebuild with the `build` command.
 * **One resolution and UI.** Measured at 1680x1050, 100 % UI scale, default HUD
   skin. Glyphs are size-normalised and regions scale with the frame, and tests
   check that 0.8× and 1.25× frames are never misread, but other resolutions,
@@ -216,11 +245,12 @@ which 23 ms is loading the screenshot.
 * **Live, the controllers are not faster.** In a real skirmish
   ([live_validation.md](live_validation.md)) the Town Center and idle-villager
   observations take the same ~1.1 s / ~1.3 s with either engine: their text reads
-  (queue lines, selected name) still launch Tesseract every observation, and the
+  (selected unit's name and HP) still launch Tesseract every observation, and the
   region cache already skipped unchanged numbers. The live gain is correctness
   (yellow population, idle counts 50–58), not speed.
-* **Population `NN/60` falls back often.** When the `6` and `0` touch, OpenCV
-  refuses (≈20 % of live population reads in one run); Tesseract reads them.
-  Needs more `6` templates.
+* **Overlapping `11`.** Two `1`s overlapping by a pixel are one bold `1` in
+  pixels (`114` reads `14` in a synthetic test). The HUD never draws that: on
+  every fixture and live crop, glyph pairs with a `1` are at least 2 px apart
+  (no pair overlaps; the closest touch).
 * **What is not covered.** Text fields, selection HP (dark text on parchment,
   another font) and the Town Center queue still use Tesseract.

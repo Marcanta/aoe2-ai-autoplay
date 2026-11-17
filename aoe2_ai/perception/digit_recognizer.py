@@ -118,6 +118,11 @@ class RecognizerConfig:
     min_glyph_px: int = 4  # tallest component shorter than this: no text
     max_aspect: float = 0.95  # glyph width / height above this: touching glyphs, try to split
     max_parts: int = 3  # most glyphs one touching blob may be split into
+    # A piece cut out of a touching blob must be about as wide (for its height) as the character it
+    # matched: its width/height within [narrowest sample * slack, widest sample / slack]. Stops a cut
+    # through one digit (half an 8) from passing as a narrow 3 or 1.
+    split_aspect_slack: float = 0.75
+    max_glyph_overlap: int = 1  # px two neighbouring glyph boxes may share (anti-aliased edges)
     max_glyphs: int = 8
     shift: int = 2  # canvas px of shift tolerated when matching
 
@@ -374,6 +379,7 @@ class DigitRecognizer:
         self.config = config
         self.kinds = dict(kinds or DEFAULT_KINDS)
         self._matrices: dict[str, tuple[list[str], np.ndarray]] = {}  # per font, see _matrix
+        self._aspects: dict[str, dict[str, tuple[float, float]]] = {}  # per font, see _aspect_range
 
     @property
     def config_key(self) -> tuple:
@@ -409,6 +415,13 @@ class DigitRecognizer:
                 return DigitReading.unknown(kind, "touching or unknown glyphs", text="".join(g.char for g in glyphs) + "?",
                                             glyphs=tuple(glyphs))
             glyphs.extend(parts)
+        # Glyphs on one line do not overlap. Two that share columns are one glyph counted twice
+        # (a digit broken into pieces that joined both neighbours), never two characters.
+        boxes = sorted(g.box for g in glyphs)
+        for a, b in zip(boxes, boxes[1:]):
+            if a[0] + a[2] - b[0] > self.config.max_glyph_overlap:
+                return DigitReading.unknown(kind, "overlapping glyphs", text="".join(g.char for g in glyphs),
+                                            glyphs=tuple(glyphs))
         return self._assemble(kind, glyphs)
 
     def classify(self, canvas: np.ndarray, font: str, charset: str) -> tuple[str, float, str, float]:
@@ -455,6 +468,32 @@ class DigitRecognizer:
     def _accepted(self, g: GlyphMatch) -> bool:
         return g.score >= self.config.min_score and g.margin >= self.config.min_margin
 
+    def _aspect_range(self, font: str) -> dict[str, tuple[float, float]]:
+        """Per character: (narrowest, widest) width/height of its template samples, built once.
+
+        A sample's ink spans the full canvas height, so its width/height is the share of
+        canvas columns holding ink (normalisation keeps the glyph's aspect).
+        """
+        cached = self._aspects.get(font)
+        if cached is None:
+            ranges: dict[str, tuple[float, float]] = {}
+            for char, samples in self.templates.fonts.get(font, {}).items():
+                widths = [int((s.max(axis=0) > 0.25).sum()) / CANVAS for s in samples]
+                if widths:
+                    ranges[char] = (min(widths), max(widths))
+            cached = self._aspects.setdefault(font, ranges)
+        return cached
+
+    def _plausible_part(self, g: GlyphMatch, font: str) -> bool:
+        """A glyph cut out of a touching blob has the width/height of the character it matched."""
+        lo, hi = self._aspect_range(font).get(g.char, (0.0, float("inf")))
+        _, _, w, h = g.box
+        slack = self.config.split_aspect_slack
+        return lo * slack <= w / h <= hi / slack
+
+    def _accepted_part(self, g: GlyphMatch, font: str) -> bool:
+        return self._accepted(g) and self._plausible_part(g, font)
+
     def _read_blob(self, seg: _Segmentation, box, spec: KindSpec) -> list[GlyphMatch] | None:
         """One glyph, or several when the blob is touching glyphs; None if no confident reading."""
         x, y, w, h = box
@@ -470,7 +509,7 @@ class DigitRecognizer:
         x, y, w, h = box
         if w <= self.config.max_aspect * h:
             g = self._match(seg, box, spec)
-            return [g] if self._accepted(g) else None
+            return [g] if self._accepted_part(g, spec.font) else None
         if parts_left < 2:
             return None
         min_w = max(1, round(0.25 * h))
@@ -483,7 +522,7 @@ class DigitRecognizer:
             if left is None or right is None or left[2] > self.config.max_aspect * h:
                 continue
             g = self._match(seg, left, spec)
-            if not self._accepted(g):
+            if not self._accepted_part(g, spec.font):
                 continue
             rest = self._split(seg, right, spec, parts_left - 1)
             if rest is None:
@@ -676,12 +715,36 @@ def labelled_crops(labels: dict, frames_dir: Path, regions=None) -> Iterable[tup
             yield name, "idle_count", "digits", white_only(rs["idle_count"].crop(frame)), idle["count"]
 
 
+def extra_crops(path: str | Path) -> Iterable[tuple[str, str, str, np.ndarray, Any]]:
+    """(file, field, kind, crop, value) for every crop listed in a ``crops.json``.
+
+    ``crops.json`` holds ``{"crops": {file: {"field", "kind", "value", ...}}}`` next to the
+    crop PNGs: raw region crops with checked values, for screens that are not worth a full
+    labelled frame (``tests/fixtures/live_crops``). The idle count goes through ``white_only``
+    like in ``labelled_crops``. A missing file yields nothing.
+    """
+    from .villager import white_only
+
+    path = Path(path)
+    if not path.is_file():
+        return
+    entries = json.loads(path.read_text(encoding="utf-8"))["crops"]
+    for name, e in sorted(entries.items()):
+        crop = cv2.imread(str(path.parent / name), cv2.IMREAD_COLOR)
+        if crop is None:
+            raise ValueError(f"missing crop {path.parent / name}")
+        value = tuple(e["value"]) if e["kind"] == "fraction" else e["value"]
+        yield name, e["field"], e["kind"], white_only(crop) if e["field"] == "idle_count" else crop, value
+
+
 def build_templates(labels: dict, frames_dir: Path, *, config: RecognizerConfig = RecognizerConfig(),
-                    exclude: Iterable[str] = ()) -> TemplateSet:
-    """Templates cut from every labelled numeric field (``exclude``: frame names to leave out)."""
+                    exclude: Iterable[str] = (),
+                    extra: Iterable[tuple[str, str, str, np.ndarray, Any]] = ()) -> TemplateSet:
+    """Templates cut from every labelled numeric field, then from the ``extra`` crops
+    (see :func:`extra_crops`). ``exclude``: frame or crop names to leave out."""
     excluded = set(exclude)
     templates = TemplateSet()
-    for name, _, kind, crop, value in labelled_crops(labels, frames_dir):
+    for name, _, kind, crop, value in [*labelled_crops(labels, frames_dir), *extra]:
         if name not in excluded:
             harvest(config, templates, crop, kind, value)
     return templates
@@ -695,6 +758,8 @@ def main(argv: list[str] | None = None) -> None:
     b = sub.add_parser("build", help="cut templates from labelled screenshots")
     b.add_argument("--labels", type=Path, default=fixtures / "labels.json")
     b.add_argument("--frames", type=Path, default=fixtures / "frames")
+    b.add_argument("--extra-crops", type=Path, default=fixtures / "live_crops" / "crops.json",
+                   help="crops.json of extra labelled crops (default: the live-game crops; a missing file is skipped)")
     b.add_argument("--out", type=Path, default=TEMPLATE_DIR)
     r = sub.add_parser("read", help="read the numeric HUD fields of a screenshot")
     r.add_argument("--image", type=Path, required=True)
@@ -702,7 +767,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.cmd == "build":
         labels = json.loads(args.labels.read_text(encoding="utf-8"))["frames"]
-        templates = build_templates(labels, args.frames)
+        templates = build_templates(labels, args.frames, extra=extra_crops(args.extra_crops))
         templates.save(args.out)
         for font, chars in sorted(templates.fonts.items()):
             print(f"{font}: " + "  ".join(f"{c!s}x{len(s)}" for c, s in sorted(chars.items())))

@@ -10,9 +10,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 24,
         "negatives_wrong": 0,
-        "mean_ms": 1.5010713328956626,
-        "median_ms": 1.3467999960994348,
-        "p95_ms": 2.417700001387857,
+        "mean_ms": 1.958471000204251,
+        "median_ms": 1.635549997445196,
+        "p95_ms": 3.0808000010438263,
         "wrong_cases": []
       },
       "wood": {
@@ -24,9 +24,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.3487444443550582,
-        "median_ms": 1.3206000003265217,
-        "p95_ms": 1.5503999893553555,
+        "mean_ms": 1.7305133327479578,
+        "median_ms": 1.5832000062800944,
+        "p95_ms": 2.9168000037316233,
         "wrong_cases": []
       },
       "food": {
@@ -38,9 +38,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.2476133331397756,
-        "median_ms": 1.308399994741194,
-        "p95_ms": 1.8276000046171248,
+        "mean_ms": 1.708459998998377,
+        "median_ms": 1.530499997898005,
+        "p95_ms": 3.754999997909181,
         "wrong_cases": []
       },
       "gold": {
@@ -52,9 +52,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.3884288895901085,
-        "median_ms": 1.333299995167181,
-        "p95_ms": 1.6949999990174547,
+        "mean_ms": 1.9083600002987724,
+        "median_ms": 1.600300005520694,
+        "p95_ms": 3.264999992097728,
         "wrong_cases": []
       },
       "stone": {
@@ -66,9 +66,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.398186666968589,
-        "median_ms": 1.3140999944880605,
-        "p95_ms": 1.7360999918309972,
+        "mean_ms": 1.8419711119754032,
+        "median_ms": 1.5937999996822327,
+        "p95_ms": 2.7923000016016886,
         "wrong_cases": []
       },
       "population": {
@@ -80,9 +80,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.7352266647827088,
-        "median_ms": 1.631999999517575,
-        "p95_ms": 2.1821999980602413,
+        "mean_ms": 2.7889666677866547,
+        "median_ms": 2.1489000064320862,
+        "p95_ms": 4.480200004763901,
         "wrong_cases": []
       },
       "game_time": {
@@ -94,9 +94,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 2.4577499993722,
-        "median_ms": 2.262200003315229,
-        "p95_ms": 3.249699992011301,
+        "mean_ms": 2.524335715168577,
+        "median_ms": 2.430050000839401,
+        "p95_ms": 3.0704999953741208,
         "wrong_cases": []
       },
       "idle_count": {
@@ -108,9 +108,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 0.8114212105283514,
-        "median_ms": 0.7460999913746491,
-        "p95_ms": 1.1269999959040433,
+        "mean_ms": 0.9847575755415936,
+        "median_ms": 0.8197999995900318,
+        "p95_ms": 1.2694999895757064,
         "wrong_cases": []
       }
     },
@@ -124,9 +124,9 @@
         "unknown_rate": 0.03,
         "negatives_ok": 24,
         "negatives_wrong": 0,
-        "mean_ms": 347.1691863331459,
-        "median_ms": 319.6637000000919,
-        "p95_ms": 564.6656000026269,
+        "mean_ms": 516.0090516664301,
+        "median_ms": 463.12760000728304,
+        "p95_ms": 843.6541999981273,
         "wrong_cases": []
       },
       "wood": {
@@ -138,9 +138,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 331.17096888890956,
-        "median_ms": 320.01530000707135,
-        "p95_ms": 387.02829999965616,
+        "mean_ms": 478.7368955540135,
+        "median_ms": 441.6886999970302,
+        "p95_ms": 756.0795999888796,
         "wrong_cases": []
       },
       "food": {
@@ -152,9 +152,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 334.1449733348175,
-        "median_ms": 317.1121000050334,
-        "p95_ms": 399.64440000767354,
+        "mean_ms": 512.6259488881462,
+        "median_ms": 472.76760000386275,
+        "p95_ms": 688.907100004144,
         "wrong_cases": []
       },
       "gold": {
@@ -166,9 +166,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 348.71249111020006,
-        "median_ms": 321.8266999901971,
-        "p95_ms": 574.1437999968184,
+        "mean_ms": 516.9925999995838,
+        "median_ms": 485.30010000104085,
+        "p95_ms": 803.8224000047194,
         "wrong_cases": []
       },
       "stone": {
@@ -180,9 +180,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 352.9078355553793,
-        "median_ms": 316.477299988037,
-        "p95_ms": 574.3886999989627,
+        "mean_ms": 538.6963755561737,
+        "median_ms": 452.5759999960428,
+        "p95_ms": 963.8613999995869,
         "wrong_cases": []
       },
       "population": {
@@ -194,9 +194,9 @@
         "unknown_rate": 0.13333333333333333,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 334.7570088886035,
-        "median_ms": 316.9250000064494,
-        "p95_ms": 544.2130000010366,
+        "mean_ms": 495.7670266665648,
+        "median_ms": 437.76649999199435,
+        "p95_ms": 784.4697000109591,
         "wrong_cases": []
       },
       "game_time": {
@@ -208,9 +208,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 351.8297690465087,
-        "median_ms": 329.51930000126595,
-        "p95_ms": 498.74219999765046,
+        "mean_ms": 520.26700476251,
+        "median_ms": 464.0081499965163,
+        "p95_ms": 973.7465999933193,
         "wrong_cases": []
       },
       "idle_count": {
@@ -222,9 +222,9 @@
         "unknown_rate": 0.09090909090909091,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 387.8093363631651,
-        "median_ms": 312.6284000027226,
-        "p95_ms": 767.2706000012113,
+        "mean_ms": 561.3531272727855,
+        "median_ms": 481.79659999732394,
+        "p95_ms": 1033.9187000063248,
         "wrong_cases": []
       }
     },
@@ -238,9 +238,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 24,
         "negatives_wrong": 0,
-        "mean_ms": 1.4161103342485148,
-        "median_ms": 1.3221499975770712,
-        "p95_ms": 2.2674000065308064,
+        "mean_ms": 1.9683516668737866,
+        "median_ms": 1.6064000083133578,
+        "p95_ms": 2.9688999929931015,
         "wrong_cases": []
       },
       "wood": {
@@ -252,9 +252,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.3128888903237466,
-        "median_ms": 1.3198000087868422,
-        "p95_ms": 1.4300000038929284,
+        "mean_ms": 2.086715554792641,
+        "median_ms": 1.6146999987540767,
+        "p95_ms": 3.0205000075511634,
         "wrong_cases": []
       },
       "food": {
@@ -266,9 +266,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.1832311122109078,
-        "median_ms": 1.3036000018473715,
-        "p95_ms": 1.484399996115826,
+        "mean_ms": 1.849393334123306,
+        "median_ms": 1.5023999876575544,
+        "p95_ms": 1.980899993213825,
         "wrong_cases": []
       },
       "gold": {
@@ -280,9 +280,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.3279711103273764,
-        "median_ms": 1.312699998379685,
-        "p95_ms": 1.4816999901086092,
+        "mean_ms": 1.665359999686997,
+        "median_ms": 1.554200003738515,
+        "p95_ms": 2.398700002231635,
         "wrong_cases": []
       },
       "stone": {
@@ -294,9 +294,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.3214955565571371,
-        "median_ms": 1.3111000007484108,
-        "p95_ms": 1.4879999944241717,
+        "mean_ms": 2.1598777779015816,
+        "median_ms": 1.5724999975645915,
+        "p95_ms": 2.700800003367476,
         "wrong_cases": []
       },
       "population": {
@@ -308,9 +308,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 1.6319800016289163,
-        "median_ms": 1.6013999993447214,
-        "p95_ms": 2.0300000032875687,
+        "mean_ms": 2.2175333339772703,
+        "median_ms": 1.9948999979533255,
+        "p95_ms": 4.953199997544289,
         "wrong_cases": []
       },
       "game_time": {
@@ -322,9 +322,9 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 2.2512571435765407,
-        "median_ms": 2.2090999991633,
-        "p95_ms": 2.468499995302409,
+        "mean_ms": 2.4993642856272693,
+        "median_ms": 2.377350007009227,
+        "p95_ms": 2.8321999998297542,
         "wrong_cases": []
       },
       "idle_count": {
@@ -336,20 +336,20 @@
         "unknown_rate": 0.0,
         "negatives_ok": 0,
         "negatives_wrong": 0,
-        "mean_ms": 0.7663575771871503,
-        "median_ms": 0.6868000054964796,
-        "p95_ms": 1.0094000026583672,
+        "mean_ms": 1.1055333346699958,
+        "median_ms": 0.8106000022962689,
+        "p95_ms": 1.60830000822898,
         "wrong_cases": []
       }
     }
   },
   "opencv_leave_one_out": {
     "fields": 100,
-    "exact": 92,
+    "exact": 100,
     "wrong": 0,
-    "unknown": 8,
-    "exact_rate": 0.92,
-    "unknown_rate": 0.08,
+    "unknown": 0,
+    "exact_rate": 1.0,
+    "unknown_rate": 0.0,
     "negatives_ok": 0,
     "negatives_wrong": 0,
     "mean_ms": 0.0,
@@ -375,10 +375,10 @@
     }
   },
   "agreement": {
-    "frames": 43,
-    "both_agree": 223,
+    "frames": 44,
+    "both_agree": 229,
     "disagree": 0,
-    "opencv_only": 10,
+    "opencv_only": 11,
     "tesseract_only": 4,
     "neither": 64,
     "disagreements": []

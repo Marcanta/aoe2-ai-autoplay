@@ -27,6 +27,7 @@ from aoe2_ai.perception.digit_recognizer import (
     build_templates,
     channel,
     expected_text,
+    extra_crops,
     labelled_crops,
     normalize_glyph,
     segment,
@@ -34,9 +35,10 @@ from aoe2_ai.perception.digit_recognizer import (
 from aoe2_ai.perception.ocr import OcrResult
 from aoe2_ai.perception.profile import PerceptionProfile
 
-from conftest import FRAMES, load_labels, requires_tesseract
+from conftest import FIXTURES, FRAMES, load_labels, requires_tesseract
 
 LABELS = load_labels()["frames"]
+LIVE_CROPS = FIXTURES / "live_crops" / "crops.json"
 
 
 @lru_cache(maxsize=None)
@@ -123,7 +125,7 @@ def test_templates_cover_every_character_of_every_kind():
 
 
 def test_committed_templates_match_a_rebuild_from_the_fixtures():
-    rebuilt = build_templates(LABELS, FRAMES)
+    rebuilt = build_templates(LABELS, FRAMES, extra=extra_crops(LIVE_CROPS))
     committed = TemplateSet.load()
     assert {f: {c: len(s) for c, s in ch.items()} for f, ch in rebuilt.fonts.items()} == \
            {f: {c: len(s) for c, s in ch.items()} for f, ch in committed.fonts.items()}
@@ -131,6 +133,52 @@ def test_committed_templates_match_a_rebuild_from_the_fixtures():
         for char, samples in chars.items():
             for a, b in zip(samples, committed.fonts[font][char]):
                 assert np.abs(a - b).max() <= 1 / 255 + 1e-6  # PNG round trip
+
+
+# --- live-game crops (tests/fixtures/live_crops) ------------------------------------
+@lru_cache(maxsize=None)
+def live_crops() -> tuple:
+    return tuple(extra_crops(LIVE_CROPS))
+
+
+def _verdict(rec: DigitRecognizer, kind: str, crop: np.ndarray, value) -> str:
+    r = rec.recognize(crop, kind)
+    if r.status is not Status.VALID:
+        return "unknown"
+    got = r.text if kind == "fraction" else expected_text(kind, r.value)
+    return "ok" if got == expected_text(kind, value) else "wrong"
+
+
+def test_live_crops_fixture():
+    crops = live_crops()
+    fields = {field for _, field, _, _, _ in crops}
+    assert len(crops) >= 100 and fields >= {"population", "idle_count", "game_time", "food"}
+    # The population cases that used to fall back to Tesseract: white NN/60, one with a touching "60".
+    pops = {value for _, field, _, _, value in crops if field == "population"}
+    assert {(20, 60), (29, 60), (36, 60), (40, 60), (56, 60)} <= pops
+    assert all(isinstance(v, tuple) for v in pops)
+
+
+def test_extra_crops_missing_file_yields_nothing(tmp_path):
+    assert list(extra_crops(tmp_path / "nope.json")) == []
+
+
+def test_every_live_crop_is_read_correctly():
+    rec = recognizer()
+    bad = [(name, value, v) for name, _, kind, crop, value in live_crops()
+           if (v := _verdict(rec, kind, crop, value)) != "ok"]
+    assert bad == []
+
+
+@pytest.mark.parametrize("held_out", [("tc_hybrid", "idle_hybrid"), ("tc_tesseract", "idle_tesseract")])
+def test_live_crops_held_out_from_the_templates_are_read_correctly(held_out):
+    """Templates built without one half of the live runs read the other half: nothing wrong, nothing refused."""
+    train = [c for c in live_crops() if not c[0].startswith(held_out)]
+    test = [c for c in live_crops() if c[0].startswith(held_out)]
+    rec = DigitRecognizer(build_templates(LABELS, FRAMES, extra=train))
+    verdicts = {name: _verdict(rec, kind, crop, value) for name, _, kind, crop, value in test}
+    assert test and "wrong" not in verdicts.values()
+    assert [n for n, v in verdicts.items() if v != "ok"] == []
 
 
 def test_template_set_save_load_round_trip(tmp_path):
@@ -181,6 +229,28 @@ def test_overlapping_digits_are_never_misread(text):
     """1 px of overlap: either split correctly or rejected, never another number."""
     r = read(bgr(compose(text, gap=-1, size=(64, 16))))
     assert r.value in (None, int(text))
+
+
+@pytest.mark.parametrize("gap", [0, -1])
+def test_no_touching_or_overlapping_number_is_misread(gap):
+    """Every 2-digit number and a spread of 3-digit ones, touching (0) or overlapping (-1):
+    read right or refused, never another number."""
+    numbers = [*range(10, 100), *range(100, 1000, 7)]
+    if gap < 0:
+        # Two "1"s overlapping by a pixel are one bold "1" in pixels (114 reads 14). The HUD never draws
+        # that: on all fixture and live crops, glyph pairs with a "1" are >= 2 px apart (min gap of any
+        # pair: 0, touching). See docs/digit_recognition.md, limitations.
+        numbers = [n for n in numbers if "11" not in str(n)]
+    wrong = [(n, v) for n in numbers if (v := read(bgr(compose(str(n), gap=gap, size=(64, 16)))).value) not in (None, n)]
+    assert wrong == []
+
+
+def test_split_pieces_must_have_the_width_of_their_character():
+    """The guard that keeps the overlapped "89" from reading as "139" (half an 8 matched as a narrow 3)."""
+    crop = bgr(compose("89", gap=-1, size=(64, 16)))
+    assert read(crop).value in (None, 89)
+    unguarded = DigitRecognizer(recognizer().templates, RecognizerConfig(split_aspect_slack=1e-9))
+    assert unguarded.recognize(crop, "digits").value == 139
 
 
 @pytest.mark.parametrize("scale", [0.6, 0.45])
