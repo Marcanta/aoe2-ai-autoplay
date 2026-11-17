@@ -503,6 +503,8 @@ def _food_delta(before: Observation, after: Observation) -> str:
 
 # --- CLI ---------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> None:
+    from aoe2_ai.perception.profile import TOWN_CENTER
+
     from .runtime import add_common_args, run_live, setup_logging
 
     parser = argparse.ArgumentParser(description="Keep the Town Center producing villagers.")
@@ -517,7 +519,7 @@ def main(argv: list[str] | None = None) -> None:
     overrides = {k: v for k, v in (("select_hotkey", args.select_key), ("train_hotkey", args.train_key)) if v}
     if overrides:
         config = TownCenterConfig(**{**asdict(config), **overrides})
-    run_live(args, lambda observer, executor: TownCenterController(observer, executor, config), config.debug_dir)
+    run_live(args, lambda observer, executor: TownCenterController(observer, executor, config), config.debug_dir, TOWN_CENTER)
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import threading
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -140,8 +141,17 @@ class TesseractOcr:
         self.dark_passes = dark_passes
         self.scale = scale
         self.early_stop = max(2, early_stop)
+        self._launch_lock = threading.Lock()
+        self.launches = 0  # Tesseract process launches since creation (one per pass actually run)
+
+    @property
+    def config_key(self) -> tuple:
+        """Everything that changes what ``read`` returns for a given crop (for result caches)."""
+        return ("tesseract", self._tess.pytesseract.tesseract_cmd, self.lang, self.passes, self.dark_passes, self.scale, self.early_stop)
 
     def _read_once(self, image: np.ndarray, config: str) -> tuple[str, float]:
+        with self._launch_lock:
+            self.launches += 1
         data = self._tess.image_to_data(image, lang=self.lang, config=config, output_type=self._tess.Output.DICT)
         words, confs = [], []
         for text, conf in zip(data["text"], data["conf"]):

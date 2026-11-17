@@ -308,3 +308,19 @@ def test_config_from_json(tmp_path):
     p.write_text('{"typo": 1}')
     with pytest.raises(ValueError):
         IdleVillagerConfig.from_json(p)
+
+
+def test_live_metrics_records_observations_and_actions(tmp_path):
+    from aoe2_ai.controllers.metrics import LiveMetrics
+
+    a = make_idle_obs(present=True, count=1, villager=None)
+    b = make_idle_obs(present=True, count=1, villager=fp(1))
+    controller = make_controller(a, a, b, b, backend=MockInput())[0]
+    metrics = LiveMetrics(tmp_path)
+    metrics.attach(controller.observer, controller)
+    controller.run(max_cycles=3)
+    summary = metrics.close()
+    assert summary["observations"]["n"] >= 3 and summary["cycles"] == 3
+    assert summary["outcomes"].get("selected") == 1
+    assert (tmp_path / "summary.json").exists() and (tmp_path / "cycles.jsonl").read_text().count("\n") == 3
+    assert list(tmp_path.glob("cycle_*_selected.json"))  # action cycles keep their observations

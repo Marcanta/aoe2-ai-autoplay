@@ -417,6 +417,8 @@ class IdleVillagerController:
 
 # --- CLI ---------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> None:
+    from aoe2_ai.perception.profile import IDLE_VILLAGER
+
     from .runtime import add_common_args, run_live, setup_logging
 
     parser = argparse.ArgumentParser(description="Find idle villagers and select them one at a time (no orders given).")
@@ -429,7 +431,7 @@ def main(argv: list[str] | None = None) -> None:
     config = IdleVillagerConfig.from_json(args.config) if args.config else IdleVillagerConfig()
     if args.idle_key:
         config = IdleVillagerConfig(**{**asdict(config), "idle_hotkey": args.idle_key})
-    run_live(args, lambda observer, executor: IdleVillagerController(observer, executor, config), config.debug_dir)
+    run_live(args, lambda observer, executor: IdleVillagerController(observer, executor, config), config.debug_dir, IDLE_VILLAGER)
 
 
 if __name__ == "__main__":

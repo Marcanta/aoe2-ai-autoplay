@@ -23,6 +23,7 @@ from aoe2_ai.debug import close_windows, show_image
 from .capture import Frame, LiveSource, file_frames
 from .debug import crops_mosaic, overlay, save_debug
 from .pipeline import Perception
+from .profile import PROFILES, PerceptionProfile
 from .regions import DEFAULT_REGIONS_PATH, RegionSet
 
 
@@ -58,6 +59,8 @@ def main() -> None:
     parser.add_argument("--calibrate", action="store_true", help="draw regions and save crops, no OCR")
     parser.add_argument("--regions", type=Path, default=DEFAULT_REGIONS_PATH, help="region JSON file")
     parser.add_argument("--no-hud-check", action="store_true", help="OCR even when the in-game HUD is not detected")
+    parser.add_argument("--profile", choices=sorted(PROFILES), default="full", help="fields to read (default: all)")
+    parser.add_argument("--cache", action="store_true", help="reuse detections of regions whose pixels did not change")
     args = parser.parse_args()
 
     regions = RegionSet.load(args.regions)
@@ -71,7 +74,7 @@ def main() -> None:
         calibrate(frames, regions, args.save or Path("captures/calibration"))
         return
 
-    perception = Perception(regions, hud_check=not args.no_hud_check)
+    perception = Perception(regions, hud_check=not args.no_hud_check, profile=PerceptionProfile.named(args.profile), cache=args.cache)
     live = None if args.image else LiveSource()
     frames = file_frames(args.image) if args.image else (iter(live) if args.live else iter([live.grab()]))
     wait_ms = max(1, int(args.interval * 1000)) if args.live else 0
@@ -81,7 +84,8 @@ def main() -> None:
             started = time.perf_counter()
             result = perception.analyze(frame)
             elapsed = time.perf_counter() - started
-            print(f"--- {frame.source}  ({elapsed * 1000:.0f} ms)")
+            launches = "" if result.ocr_launches is None else f", {result.ocr_launches} Tesseract launches"
+            print(f"--- {frame.source}  ({elapsed * 1000:.0f} ms{launches})")
             print(result.state.to_json())
             if args.save:
                 print(f"saved {save_debug(args.save, frame.image, result)}")
