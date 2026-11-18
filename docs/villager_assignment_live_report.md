@@ -43,8 +43,8 @@ Start with `--dry-run` to check the detector's choice in the log before any live
 
 | # | Villagers selected | SUCCESS | FAILURE | UNKNOWN | Incorrect commands | Duplicate assignments | Obs. latency mean / P95 (ms) | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 1 | 1 | 0 | 0 | 0 | 0 | 452 / 1722 (n=6; median 78) | 2026-11-19, desert map, white sheep. P95 is the first observation (OCR start-up). Click to verified SUCCESS: 2.5 s. |
-| 2 | | | | | | | | |
+| 1 | | | | | | | | Not run as such (Phase A had 6 sheep in view: see row 2). |
+| 2 | 1 | 1 | 0 | 0 | 0 | 0 | 452 / 1722 (n=6; median 78) | 2026-11-19 (Phase A), desert map, 6 white sheep in view, nearest chosen. P95 is the first observation (OCR start-up). Click to verified SUCCESS: 2.5 s. |
 | 3 | 2 | 2 | 0 | 0 | 0 | 0 | 129 / 921 (n=28; median 52) | 2026-11-19. 2 villagers, 2 different sheep (checked on the frames). Idle 0 afterwards: 16 cycles without input. |
 | 4 | | | | | | | | |
 | 5 | | | | | | | | |
