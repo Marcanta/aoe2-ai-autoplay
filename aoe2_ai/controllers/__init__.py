@@ -2,6 +2,7 @@
 
 from .idle_villager import IdleVillagerConfig, IdleVillagerController
 from .observation import LiveObserver, Observation, Observer
+from .villager_assignment import VillagerAssignmentConfig, VillagerAssignmentController
 from .town_center import (
     ControllerState,
     CycleReport,
@@ -16,5 +17,6 @@ from .town_center import (
 
 __all__ = [
     "ControllerState", "CycleReport", "Decision", "DecisionKind", "FailureRecord", "IdleVillagerConfig", "IdleVillagerController", "LiveObserver",
-    "Observation", "Observer", "Outcome", "TownCenterConfig", "TownCenterController", "decide",
+    "Observation", "Observer", "Outcome", "TownCenterConfig", "TownCenterController", "VillagerAssignmentConfig",
+    "VillagerAssignmentController", "decide",
 ]

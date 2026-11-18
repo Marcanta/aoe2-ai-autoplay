@@ -1,0 +1,153 @@
+{
+  "description": "Sheep detection dataset: crops of real 1680x1050 AoE2 DE captures (French UI, player 1 blue). On this map the herd animals are water buffalo, the sheep equivalent. Boxes are in source-frame pixels; subtract crop[0:2] for crop pixels.",
+  "items": {
+    "herd_open": {
+      "source": "captures/fixtures/start_20261116_184105.png",
+      "crop": [
+        1180,
+        500,
+        380,
+        260
+      ],
+      "animals": [
+        {
+          "id": "a",
+          "box": [
+            1395,
+            562,
+            57,
+            43
+          ],
+          "label": "sheep_living",
+          "note": "water buffalo, facing right; template water_buffalo_a"
+        },
+        {
+          "id": "b",
+          "box": [
+            1379,
+            610,
+            59,
+            42
+          ],
+          "label": "sheep_living",
+          "note": "water buffalo, facing left; template water_buffalo_b"
+        },
+        {
+          "id": "c",
+          "box": [
+            1299,
+            658,
+            57,
+            41
+          ],
+          "label": "sheep_living",
+          "note": "water buffalo, facing right; template water_buffalo_c"
+        }
+      ],
+      "file": "herd_open.png"
+    },
+    "herd_tc": {
+      "source": "captures/fixtures/eco_20261116_184221.png",
+      "crop": [
+        690,
+        470,
+        280,
+        180
+      ],
+      "animals": [
+        {
+          "id": "d",
+          "box": [
+            788,
+            527,
+            76,
+            38
+          ],
+          "label": "sheep_living",
+          "note": "walking, overlapping f; template water_buffalo_d_walking"
+        },
+        {
+          "id": "e",
+          "box": [
+            742,
+            548,
+            72,
+            42
+          ],
+          "label": "sheep_living",
+          "note": "herded under the Town Center, overlapping f"
+        },
+        {
+          "id": "f",
+          "box": [
+            798,
+            556,
+            66,
+            46
+          ],
+          "label": "sheep_living",
+          "note": "herded, overlapping d and e"
+        }
+      ],
+      "file": "herd_tc.png"
+    },
+    "carcass_gathered": {
+      "source": "captures/fixtures/eco_20261116_184302.png",
+      "crop": [
+        880,
+        400,
+        220,
+        160
+      ],
+      "animals": [
+        {
+          "id": "g",
+          "box": [
+            945,
+            440,
+            80,
+            40
+          ],
+          "label": "sheep_living_occluded",
+          "note": "two standing buffalo overlapping each other and villagers; collars partly hidden"
+        },
+        {
+          "id": "h",
+          "box": [
+            979,
+            468,
+            50,
+            31
+          ],
+          "label": "sheep_carcass",
+          "note": "slain, lying, being gathered; template water_buffalo_carcass_a"
+        }
+      ],
+      "file": "carcass_gathered.png"
+    },
+    "crowd_base": {
+      "source": "runs/validation/tc_tesseract/frame_0031.png",
+      "crop": [
+        600,
+        250,
+        600,
+        400
+      ],
+      "animals": [],
+      "note": "no sheep: villager crowds and houses in the player colour (negatives)",
+      "file": "crowd_base.png"
+    },
+    "grass": {
+      "source": "captures/fixtures/start_20261116_184105.png",
+      "crop": [
+        420,
+        640,
+        360,
+        180
+      ],
+      "animals": [],
+      "note": "grass, bushes and dirt only (background for synthetic frames)",
+      "file": "grass.png"
+    }
+  }
+}
