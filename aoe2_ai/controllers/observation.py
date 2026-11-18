@@ -44,6 +44,11 @@ class Observation:
         }
 
 
+# Tesseract pass results remembered by binarised image: the selected unit's name and HP
+# change by a grey level between frames, which misses the region cache but rarely the memo.
+OCR_MEMO = 512
+
+
 class Observer(Protocol):
     def observe(self) -> Observation: ...
 
@@ -54,8 +59,8 @@ class LiveObserver:
     ``profile`` limits the observation to the fields a controller reads (default: everything).
     Without an explicit ``perception``, the observer builds one with the region cache on and
     the ``ocr`` engine (default ``hybrid``: OpenCV for the numeric HUD fields, Tesseract for the
-    rest and as fallback; ``tesseract`` for Tesseract only). An explicit ``perception`` keeps its
-    own cache and OCR engine.
+    rest and as fallback; ``tesseract`` for Tesseract only), with Tesseract's pass memo on
+    (``OCR_MEMO``). An explicit ``perception`` keeps its own cache and OCR engine.
     """
 
     def __init__(
@@ -70,7 +75,7 @@ class LiveObserver:
     ) -> None:
         self.guard = guard
         self.profile = profile
-        self.perception = perception or Perception(ocr=make_ocr(ocr), cache=True)
+        self.perception = perception or Perception(ocr=make_ocr(ocr, memo=OCR_MEMO), cache=True)
         self.detector = detector or TownCenterDetector()
         self.source = source or LiveSource()
         self.villager_detector = villager_detector or VillagerDetector()

@@ -149,7 +149,9 @@ Conclusions:
   can't be read, a capture is saved (`queue_unknown`, at most once a minute) to see why.
 - Templates were cut at 1680x1050 with the French UI and the Franks; other villager icons (civ, UI mod)
   or a different command-grid layout need a new `villager_button.png` / region.
-- Observations take ~1.1 s live (mean, P95 ~1.4 s), with `HybridOcr` and with Tesseract only alike:
-  the numeric HUD fields are read by OpenCV, but the Town Center progress and item lines and the
-  selected name still go through Tesseract on every observation, and they set the pace (see
-  [live_validation.md](live_validation.md)). A finished villager may wait a moment before the next one is queued.
+- Observations took ~1.1 s live (mean, P95 ~1.4 s) before the Tesseract pass memo, with `HybridOcr` and
+  with Tesseract only alike: the selected object's name and HP were read again by Tesseract on every
+  observation, because one grey level of screen noise defeats the bit-exact region cache (the queue text
+  is not read with this profile). With the memo, a replay of the live frames takes 135 ms mean
+  (P95 935 ms, when the selection changes); see [perception_performance.md](perception_performance.md#tesseract-pass-memo).
+  Not yet measured in a live game.

@@ -648,18 +648,20 @@ class HybridOcr:
 OCR_ENGINES = ("hybrid", "tesseract")
 
 
-def make_ocr(name: str = "hybrid") -> OcrEngine:
+def make_ocr(name: str = "hybrid", *, memo: int = 0) -> OcrEngine:
     """The OCR engine called ``name``.
 
     ``hybrid`` (the controllers' default): OpenCV for the numeric HUD fields, Tesseract for
     everything else and for any number OpenCV is unsure of. ``tesseract``: Tesseract only.
+    ``memo``: how many Tesseract pass results to remember by binarised image (0 = off,
+    see ``TesseractOcr._read_once``).
     """
     from .ocr import TesseractOcr
 
     if name == "hybrid":
-        return HybridOcr(TesseractOcr())
+        return HybridOcr(TesseractOcr(memo=memo))
     if name == "tesseract":
-        return TesseractOcr()
+        return TesseractOcr(memo=memo)
     raise ValueError(f"unknown OCR engine {name!r} (expected one of {', '.join(OCR_ENGINES)})")
 
 
