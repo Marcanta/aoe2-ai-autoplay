@@ -1,6 +1,6 @@
 # Villager assignment: live gameplay report
 
-**Status: Phase A passed once live (1 villager, 1 SUCCESS); Phase B and the edge cases not run yet.** The rest of MVP 5 is offline (unit tests and real
+**Status: Phase A and Phase B passed live (3 villagers, 3 SUCCESS, 0 wrong or duplicate commands); edge cases 4, 5 and 7 not run yet, 6 only partly.** The rest of MVP 5 is offline (unit tests and real
 screenshots). Nothing below is a result; fill it in from real runs. Do not read the unit
 tests as proof that the controller works in the game.
 
@@ -11,6 +11,7 @@ tests as proof that the controller works in the game.
 | 2026-11-18 | `assign-sheep --dry-run -v --max-cycles 5`, desert map, white sheep, 3 idle | Safety behaved: waited while PowerShell / Task Switching was in front, settled 1 observation, read 3 idle villagers, sent nothing. **Detection found 0 sheep with 6 in view.** Cause: sand (S ~115) counted as animal body, and only buffalo templates existed. Fixed: `animal_pixels` (bright sand excluded), 3 white-sheep templates, full-resolution re-score, collar-share check. Offline on that capture now 6/6. |
 | 2026-11-19 | same dry run, after the fix | 6/6 sheep seen every cycle ("6 free of 6"), the same target chosen each time (748-749, 428), scores 0.82-0.97 (held-out sheep). Nothing sent. |
 | 2026-11-19 | Phase A live: `assign-sheep -v --metrics runs/sheep/phase_a` | `.` -> villager verified ("Villa eois" read, conf 0.58, fuzzy-matched) -> sheep at (749, 428), score 0.96 -> right-click -> **SUCCESS** 2.2 s later: panel reads "Berger", idle 3 -> 2. Checked on the after frame: villager at the sheep, cursor tooltip is the sheep's. Answers the open question: the role turns into "Berger" as soon as the order is given (within the first verification frames). |
+| 2026-11-19 | Phase B live: `assign-sheep -v --max-assignments 0 --max-cycles 20 --metrics runs/sheep/phase_b` | 2 idle -> 2 cycles, 2 **SUCCESS** (idle 2 -> 1 -> 0), each 1.6 s after the click. **Different sheep**: mapped onto one frame through the Town Center's shift (template match 0.999), the two targets are 54 px apart; the first is already slain and being gathered, the second a separate living sheep. Then 16 cycles "no idle villagers", no input. Cycle 10: PowerShell in front -> waited, nothing sent, then settled 1 observation on return (partial check of scenario 6). |
 
 ## Setup to record
 
@@ -44,10 +45,10 @@ Start with `--dry-run` to check the detector's choice in the log before any live
 |---|---|---|---|---|---|---|---|---|
 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 452 / 1722 (n=6; median 78) | 2026-11-19, desert map, white sheep. P95 is the first observation (OCR start-up). Click to verified SUCCESS: 2.5 s. |
 | 2 | | | | | | | | |
-| 3 | | | | | | | | |
+| 3 | 2 | 2 | 0 | 0 | 0 | 0 | 129 / 921 (n=28; median 52) | 2026-11-19. 2 villagers, 2 different sheep (checked on the frames). Idle 0 afterwards: 16 cycles without input. |
 | 4 | | | | | | | | |
 | 5 | | | | | | | | |
-| 6 | | | | | | | | |
+| 6 | 0 | 0 | 0 | 0 | 0 | 0 | | Partly, during run 3: alt-tab to PowerShell -> "game not detected", no input. Pause not tested. |
 | 7 | | | | | | | | |
 
 Where to read them: the end-of-run `Summary:` line (`selected`, `success`, `failure`,
