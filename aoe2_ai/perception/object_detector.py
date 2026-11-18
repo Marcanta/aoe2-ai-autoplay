@@ -120,20 +120,44 @@ def owner_mask(bgr: np.ndarray, low: tuple[int, int, int], high: tuple[int, int,
     return cv2.inRange(hsv, np.array(low, np.uint8), np.array(high, np.uint8)) > 0
 
 
-def extract_template(crop: np.ndarray, owner_low=(100, 100, 80), owner_high=(135, 255, 255),
-                     max_saturation: int = 115) -> tuple[np.ndarray, np.ndarray] | None:
-    """Silhouette of the animal in ``crop`` (on grass): (tight BGR image, mask), or None.
+def animal_pixels(hsv: np.ndarray, max_saturation: int = 115, bright_saturation: int = 85,
+                  dark_value: int = 170) -> np.ndarray:
+    """Pixels that may belong to a herd animal: very desaturated (white sheep, grey), or
+    moderately desaturated *and* dark (brown / black animals).
 
-    Herd animals (grey/brown/white) are far less saturated than grass and dirt; the collar
-    is the player colour. The largest such component is the animal.
+    The terrain is the opposite: grass is saturated; sand is moderately desaturated but
+    bright (S 105-125, V > 220 on the desert map), so it must not count as an animal.
+    """
+    sat, val = hsv[..., 1], hsv[..., 2]
+    return (sat < bright_saturation) | ((sat < max_saturation) & (val < dark_value))
+
+
+def extract_template(crop: np.ndarray, owner_low=(100, 100, 80), owner_high=(135, 255, 255),
+                     max_saturation: int = 115, margin: int = 20) -> tuple[np.ndarray, np.ndarray] | None:
+    """Silhouette of the one animal in ``crop``: (tight BGR image, mask), or None.
+
+    Only for cutting templates, where the crop shows one animal on its ground. The ground's
+    saturation is taken from the crop border; animal pixels are at least ``margin`` below it
+    (white wool under desert light is S ~80 on sand of S ~115), or dark and desaturated
+    (:func:`animal_pixels`). Thin lines (tile grid, sand ripples) are opened away, and the
+    component holding the collar (player colour) is the animal; without a collar, the largest.
     """
     hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-    animal = (hsv[..., 1] < max_saturation) | owner_mask(crop, owner_low, owner_high)
-    m = cv2.morphologyEx(animal.astype(np.uint8) * 255, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
+    border = np.concatenate([hsv[0, :, 1], hsv[-1, :, 1], hsv[:, 0, 1], hsv[:, -1, 1]])
+    limit = min(max_saturation, int(np.median(border)) - margin)
+    collar = owner_mask(crop, owner_low, owner_high)
+    animal = (hsv[..., 1] < limit) | animal_pixels(hsv, max_saturation, 0) | collar
+    m = cv2.morphologyEx(animal.astype(np.uint8) * 255, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
+    m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
     n, labels, stats, _ = cv2.connectedComponentsWithStats(m)
     if n < 2:
         return None
     k = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+    if collar.any():
+        near = cv2.dilate(collar.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+        ids, counts = np.unique(labels[near & (labels > 0)], return_counts=True)
+        if ids.size:
+            k = int(ids[np.argmax(counts)])
     x, y, w, h, _ = stats[k]
     mask = np.where(labels[y:y + h, x:x + w] == k, 255, 0).astype(np.uint8)
     return np.ascontiguousarray(crop[y:y + h, x:x + w]), mask
@@ -167,6 +191,7 @@ class Verdict(str, Enum):
     CARCASS = "carcass"
     OVERLAP = "overlap"  # overlaps another detected animal: a click could hit either
     OUTSIDE_WORLD = "outside_world"  # touches the HUD, minimap or a screen edge
+    COLLAR_MISMATCH = "collar_mismatch"  # far more or less player colour than a collar: a rider, a villager...
 
 
 @dataclass(frozen=True)
@@ -254,7 +279,13 @@ class SheepDetectorConfig:
     report_low: float = 0.55  # below this a candidate is not reported at all (not sheep-like)
     probe_min: float = 0.45  # one-zoom probe score under which the full zoom sweep is skipped
     carcass_margin: float = 0.05  # carcass within this of the living score -> ambiguous
-    max_saturation: int = 115  # "animal" pixels for the body pre-filter
+    # Player colour inside the matched silhouette, relative to the template's own collar share.
+    # Real animals: 0.88-1.17x; a scout's rider 1.9x; a villager matched by shape 0.08x.
+    collar_share_band: tuple[float, float] = (0.5, 1.6)
+    refine_radius: int = 3  # px: full-resolution re-scoring around the half-resolution match
+    max_saturation: int = 115  # "animal" pixels for the body pre-filter (see animal_pixels)
+    bright_saturation: int = 85  # ... any pixel below this saturation, or below max_saturation
+    dark_value: int = 170  # ... when darker than this (bright sand is not an animal)
     min_body_fraction: float = 0.35  # body touching the collar: at least this x the smallest silhouette
     max_body_factor: float = 2.0  # ... and at most this x the largest one (two animals touching still pass)
     size_slack: float = 1.3  # a template may be up to this much larger than the body blob it is matched on
@@ -271,6 +302,7 @@ class _Prepared:
     image: np.ndarray  # at work scale
     mask: np.ndarray
     full_size: tuple[int, int]  # (w, h) in frame pixels
+    full: dict = field(default_factory=dict)  # (w, h) -> template image, mask at full resolution
 
 
 class SheepDetector:
@@ -368,7 +400,8 @@ class SheepDetector:
         owner = cv2.inRange(hsv, np.array(cfg.owner_hsv_low, np.uint8), np.array(cfg.owner_hsv_high, np.uint8))
         owner[~world] = 0
         n, _, stats, centroids = cv2.connectedComponentsWithStats(owner)
-        body = ((hsv[..., 1] < cfg.max_saturation) & world & (owner == 0)).astype(np.uint8)
+        animal = animal_pixels(hsv, cfg.max_saturation, cfg.bright_saturation, cfg.dark_value)
+        body = (animal & world & (owner == 0)).astype(np.uint8)
         _, body_labels, body_stats, _ = cv2.connectedComponentsWithStats(body)
         height, width = owner.shape
         reach = max(2, round(3 * ui))
@@ -459,7 +492,13 @@ class SheepDetector:
         score, box, p = best["living"]
         if score < cfg.report_low:
             return None
-        carcass = best["carcass"][0] if "carcass" in best else None
+        # The half-resolution search finds where; the full-resolution score decides. At half
+        # resolution a sheep template at the smallest zoom is ~4x8 px, and a villager's white
+        # apron over a blue dress scored 0.72-0.78 there, 0.60-0.70 at full resolution.
+        score, box = self._refine(frame, box, p)
+        carcass = None
+        if "carcass" in best:
+            carcass = self._refine(frame, best["carcass"][1], best["carcass"][2])[0]
         ax, ay = p.template.anchor
         px, py = int(round(box[0] + ax * box[2])), int(round(box[1] + ay * box[3]))
         verdict, reason = Verdict.ACCEPTED, f"score {score:.2f}"
@@ -469,9 +508,46 @@ class SheepDetector:
             verdict, reason = Verdict.AMBIGUOUS, f"living {score:.2f} vs carcass {carcass:.2f}"
         elif score < cfg.accept:
             verdict, reason = Verdict.LOW_CONFIDENCE, f"score {score:.2f} < {cfg.accept:.2f}"
+        elif (share := self._collar_share(frame, box, p)) is not None and not (
+                cfg.collar_share_band[0] <= share <= cfg.collar_share_band[1]):
+            verdict, reason = Verdict.COLLAR_MISMATCH, f"score {score:.2f} but {share:.2f}x the template's player colour"
         elif not box_in_world(world, box) or not point_in_world(world, px, py):
             verdict, reason = Verdict.OUTSIDE_WORLD, "box touches the HUD, minimap or a screen edge"
         return SheepCandidate(px, py, box, score, carcass, p.template.name, p.scale, verdict, reason)
+
+    def _refine(self, frame: np.ndarray, box: tuple[int, int, int, int], p: _Prepared) -> tuple[float, tuple[int, int, int, int]]:
+        """Masked score of ``p`` at full resolution, searched ``refine_radius`` px around ``box``."""
+        x, y, w, h = box
+        height, width = frame.shape[:2]
+        r = max(1, round(self.config.refine_radius * width / REFERENCE_SIZE[0]))
+        key = (w, h)
+        if key not in p.full:
+            p.full[key] = (cv2.resize(p.template.image, key, interpolation=cv2.INTER_AREA),
+                           cv2.resize(p.template.mask, key, interpolation=cv2.INTER_NEAREST))
+        img, mask = p.full[key]
+        x0, y0 = max(0, x - r), max(0, y - r)
+        win = frame[y0:min(height, y + h + r), x0:min(width, x + w + r)]
+        if win.shape[0] < h or win.shape[1] < w or (mask > 0).sum() < 12:
+            return -1.0, box
+        res = np.nan_to_num(cv2.matchTemplate(win, img, cv2.TM_CCOEFF_NORMED, mask=mask), nan=-1.0, posinf=-1.0, neginf=-1.0)
+        j = int(np.argmax(res))
+        my, mx = divmod(j, res.shape[1])
+        return float(res.flat[j]), (x0 + mx, y0 + my, w, h)
+
+    def _collar_share(self, frame: np.ndarray, box: tuple[int, int, int, int], p: _Prepared) -> float | None:
+        """Player-colour share inside the matched silhouette / the template's own share."""
+        t = p.template
+        own_t = owner_mask(t.image, self.config.owner_hsv_low, self.config.owner_hsv_high) & (t.mask > 0)
+        ref = own_t.sum() / max(1, (t.mask > 0).sum())
+        if ref <= 0:
+            return None  # template without a visible collar: nothing to compare
+        x, y, w, h = box
+        height, width = frame.shape[:2]
+        if x < 0 or y < 0 or x + w > width or y + h > height:
+            return None
+        mask = cv2.resize(t.mask, (w, h), interpolation=cv2.INTER_NEAREST) > 0
+        own = owner_mask(frame[y:y + h, x:x + w], self.config.owner_hsv_low, self.config.owner_hsv_high) & mask
+        return float(own.sum() / max(1, mask.sum()) / ref)
 
     def _classify(self, found: list[SheepCandidate]) -> tuple[list[SheepCandidate], list[SheepCandidate]]:
         cfg = self.config
@@ -507,7 +583,8 @@ def iou(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> float:
 
 # --- debug ------------------------------------------------------------------------------
 COLORS = {Verdict.ACCEPTED: (0, 255, 0), Verdict.LOW_CONFIDENCE: (0, 200, 255), Verdict.AMBIGUOUS: (0, 140, 255),
-          Verdict.CARCASS: (0, 0, 255), Verdict.OVERLAP: (255, 0, 255), Verdict.OUTSIDE_WORLD: (128, 128, 128)}
+          Verdict.CARCASS: (0, 0, 255), Verdict.OVERLAP: (255, 0, 255), Verdict.OUTSIDE_WORLD: (128, 128, 128),
+          Verdict.COLLAR_MISMATCH: (255, 128, 0)}
 
 
 def draw_scan(frame: np.ndarray, scan: SheepScan) -> np.ndarray:

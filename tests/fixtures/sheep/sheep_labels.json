@@ -148,6 +148,175 @@
       "animals": [],
       "note": "grass, bushes and dirt only (background for synthetic frames)",
       "file": "grass.png"
+    },
+    "desert_sheep": {
+      "source": "captures/fixtures/sheep_20261118_230725.png",
+      "crop": [
+        670,
+        385,
+        520,
+        190
+      ],
+      "animals": [
+        {
+          "id": "s0",
+          "box": [
+            707,
+            427,
+            10,
+            23
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; template sheep_front_a"
+        },
+        {
+          "id": "s1",
+          "box": [
+            740,
+            417,
+            28,
+            26
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; held out (not a template)"
+        },
+        {
+          "id": "s2",
+          "box": [
+            974,
+            404,
+            26,
+            28
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; template sheep_side_c"
+        },
+        {
+          "id": "s3",
+          "box": [
+            1020,
+            533,
+            18,
+            26
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; template sheep_quarter_d"
+        },
+        {
+          "id": "s4",
+          "box": [
+            1068,
+            501,
+            10,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; held out (not a template)"
+        },
+        {
+          "id": "s5",
+          "box": [
+            1150,
+            501,
+            25,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; held out (not a template)"
+        }
+      ],
+      "file": "desert_sheep.png",
+      "note": "the sheep templates sheep_front_a, sheep_side_c, sheep_quarter_d were cut from this capture"
+    },
+    "desert_sheep_2": {
+      "source": "captures/fixtures/shot.png_20261118_225730.png",
+      "crop": [
+        670,
+        385,
+        520,
+        190
+      ],
+      "animals": [
+        {
+          "id": "t0",
+          "box": [
+            707,
+            427,
+            10,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t1",
+          "box": [
+            740,
+            417,
+            28,
+            27
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t2",
+          "box": [
+            974,
+            404,
+            27,
+            29
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t3",
+          "box": [
+            1020,
+            533,
+            18,
+            26
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t4",
+          "box": [
+            1068,
+            501,
+            10,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t5",
+          "box": [
+            1150,
+            501,
+            25,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        }
+      ],
+      "file": "desert_sheep_2.png"
+    },
+    "desert_scout": {
+      "source": "captures/fixtures/sheep_20261118_230725.png",
+      "crop": [
+        360,
+        700,
+        120,
+        110
+      ],
+      "animals": [],
+      "file": "desert_scout.png",
+      "note": "own scout cavalry on sand (white rider, blue): scored 0.71 against a sheep template before the full-resolution check"
     }
   }
 }

@@ -321,3 +321,49 @@ def test_extract_template_finds_the_animal_silhouette():
     assert result is not None
     t, m = result
     assert abs(t.shape[1] - bw) <= 8 and abs(t.shape[0] - bh) <= 8
+
+
+# --- white sheep on a desert map (second live capture) ------------------------------------
+HELD_OUT = ("s1", "s4", "s5")  # sheep of desert_sheep that no template was cut from
+
+
+@pytest.mark.parametrize("name", ["desert_sheep", "desert_sheep_2"])
+def test_white_sheep_on_sand_all_found(name):
+    scan = SheepDetector().detect(place(name))
+    truth = boxes(name)
+    hits = {k for s in scan.sheep for k, b in truth.items() if inside(s, b, margin=3)}
+    assert hits == set(truth), scan.to_dict()
+    assert len(scan.sheep) == len(truth)
+
+
+def test_held_out_white_sheep_are_found():
+    scan = SheepDetector().detect(place("desert_sheep"))
+    truth = boxes("desert_sheep")
+    for k in HELD_OUT:
+        assert any(inside(s, truth[k], margin=3) for s in scan.sheep), k
+
+
+def test_sand_is_not_an_animal_body():
+    # Sand is moderately desaturated (S ~115) but bright: it must not merge into one huge "body".
+    from aoe2_ai.perception.object_detector import animal_pixels
+
+    sand = crop("desert_scout")[:30, :30]
+    hsv = cv2.cvtColor(sand, cv2.COLOR_BGR2HSV)
+    assert animal_pixels(hsv).mean() < 0.1
+
+
+def test_own_scout_on_sand_is_not_a_sheep():
+    scan = SheepDetector().detect(place("desert_scout"))
+    assert scan.sheep == (), scan.to_dict()
+
+
+def test_too_much_player_colour_is_a_collar_mismatch():
+    # With the score bar lowered, the rider (blue tunic) matches a sheep shape well enough:
+    # the collar-share check still rejects it. (Other low-score matches on the horse do pass
+    # at 0.5, which is why the real bar is 0.72.)
+    from aoe2_ai.perception.object_detector import SheepDetectorConfig
+
+    det = SheepDetector(SheepDetectorConfig(accept=0.5, report_low=0.45, probe_min=0.3))
+    scan = det.detect(place("desert_scout"))
+    rider = [c for c in (*scan.sheep, *scan.rejected) if abs(c.x - 407) <= 6 and abs(c.y - 742) <= 6]
+    assert rider and all(c.verdict is Verdict.COLLAR_MISMATCH for c in rider), scan.to_dict()

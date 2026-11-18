@@ -1,8 +1,14 @@
 # Villager assignment: live gameplay report
 
-**Status: NOT RUN YET.** Everything about MVP 5 so far is offline (unit tests and real
+**Status: no live assignment run yet** (one live dry run, logged below). Everything else about MVP 5 is offline (unit tests and real
 screenshots). Nothing below is a result; fill it in from real runs. Do not read the unit
 tests as proof that the controller works in the game.
+
+## Log so far
+
+| Date | Run | Outcome |
+|---|---|---|
+| 2026-11-18 | `assign-sheep --dry-run -v --max-cycles 5`, desert map, white sheep, 3 idle | Safety behaved: waited while PowerShell / Task Switching was in front, settled 1 observation, read 3 idle villagers, sent nothing. **Detection found 0 sheep with 6 in view.** Cause: sand (S ~115) counted as animal body, and only buffalo templates existed. Fixed: `animal_pixels` (bright sand excluded), 3 white-sheep templates, full-resolution re-score, collar-share check. Offline on that capture now 6/6. To re-run live. |
 
 ## Setup to record
 

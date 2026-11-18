@@ -91,8 +91,12 @@ All in screen pixels, OpenCV only (`SheepDetector.detect(frame)` -> `SheepScan`)
    Rectangles are measured at 1680x1050 and scaled like the HUD regions.
 2. **Candidates = the player's collar.** A herd animal the player owns wears a collar in the
    player colour. Compact blobs of that colour (HSV 100-135 hue, S >= 100, V >= 80 for blue),
-   6-250 px at the default zoom, that touch a low-saturation blob of animal size (0.35x to
-   2x a template silhouette) are the candidates. Enemy sheep (other collar colour) and
+   6-250 px at the default zoom, that touch an animal-coloured blob of animal size (0.35x to
+   2x a template silhouette) are the candidates. Animal-coloured (`animal_pixels`) = very
+   desaturated (S < 85: white wool, grey) or moderately desaturated *and* dark (S < 115,
+   V < 170: buffalo). Grass is saturated; sand is moderately desaturated (S ~105-125) but
+   bright, so it does not count (a plain S < 115 rule turned the whole desert into one
+   "body" and found nothing on the first live capture). Enemy sheep (other collar colour) and
    neutral ones never become candidates. Villagers and buildings also carry the colour; the
    body-size test removes most of them cheaply.
 3. **Template verification.** Masked `TM_CCOEFF_NORMED` (the silhouette is the mask, so the
@@ -100,7 +104,14 @@ All in screen pixels, OpenCV only (`SheepDetector.detect(frame)` -> `SheepScan`)
    mirror, at the zooms 0.7-1.4 whose size fits the body blob. A probe at the two zooms
    closest to the body size runs first; under 0.45 the candidate is dropped. Only
    placements whose box contains the collar are considered.
-4. **Classification** (`Verdict`):
+4. **Full-resolution re-score.** The best half-resolution match is scored again at full
+   resolution, +-3 px around it; that score is the one compared with the thresholds. At
+   half resolution a sheep template at the smallest zoom is ~4x8 px, and female villagers
+   (white apron, blue dress) scored 0.72-0.78 there; at full resolution 0.60-0.70, while
+   real animals score 0.76-1.00.
+5. **Collar share.** The player colour inside the matched silhouette must be 0.5x-1.6x the
+   template's own collar share. Real animals: 0.88-1.17x; the scout's rider: 1.9-2.7x.
+6. **Classification** (`Verdict`):
 
 | Verdict | Rule | Clicked? |
 |---|---|---|
@@ -108,6 +119,7 @@ All in screen pixels, OpenCV only (`SheepDetector.detect(frame)` -> `SheepScan`)
 | LOW_CONFIDENCE | 0.55 <= score < 0.72 | no |
 | CARCASS | a carcass template beats every living one | no |
 | AMBIGUOUS | a carcass template within 0.05 of the living score | no |
+| COLLAR_MISMATCH | player colour share outside 0.5x-1.6x of the template's | no |
 | OUTSIDE_WORLD | box touches the HUD, minimap or a screen edge | no |
 | OVERLAP | box overlaps another detected animal (IoU > 0.15) | no |
 
@@ -116,9 +128,9 @@ templates, is `UNKNOWN`: "could not look", never "no sheep".
 
 ### Templates and dataset
 
-No white sheep appear in any capture taken so far: on the map used for every recording the
-herd animals are **water buffalo** (the sheep equivalent: herdable, owned by sight, player
-collar, gathered by "shepherds"). The shipped templates are therefore buffalo:
+Two kinds of herd animal have been captured: **water buffalo** (the sheep equivalent on the
+first map: herdable, owned by sight, player collar, gathered by "shepherds") and **white
+sheep** on a desert map (first live dry run, 2026-11-18). Templates:
 
 | Template | From | Pose |
 |---|---|---|
@@ -126,42 +138,48 @@ collar, gathered by "shepherds"). The shipped templates are therefore buffalo:
 | `living/water_buffalo_b` | same | grazing, facing left |
 | `living/water_buffalo_c` | same | grazing, facing right |
 | `living/water_buffalo_d_walking` | `eco_20261116_184221`, herded at the TC | walking (legs slightly cut) |
+| `living/sheep_front_a` | `sheep_20261118_230725`, desert | facing the camera |
+| `living/sheep_side_c` | same | side view, head up |
+| `living/sheep_quarter_d` | same | three-quarter view |
 | `carcass/water_buffalo_carcass_a` | `eco_20261116_184302`, being gathered | lying, head hidden by a villager |
 
 Mirrored versions are generated at load time. Add a sheep (or any herdable) from a
 screenshot with `python -m aoe2_ai.perception.object_detector --extract --image shot.png
---box X,Y,W,H --name sheep_a [--kind carcass]`; the silhouette is cut automatically (low
-saturation + collar, largest component).
+--box X,Y,W,H --name sheep_a [--kind carcass]`; the silhouette is cut automatically: pixels
+clearly less saturated than the crop border (the ground), thin lines opened away, and the
+component holding the collar.
 
 The labelled dataset (`tests/fixtures/sheep/`, provenance and boxes in `sheep_labels.json`)
 holds crops of real frames: the open-field herd, the herd overlapping under the Town Center,
 a carcass being gathered next to two standing buffalo, a dense base with villager crowds and
-houses (negatives), and plain grass. Tests paste them into a real HUD frame.
+houses (negatives), plain grass, six white sheep on sand in two captures (three of them never
+used as templates), and the player's scout on sand (negative). Tests paste them into a real HUD frame.
 
 ### Offline results (1680x1050 captures)
 
 | Check | Result |
 |---|---|
 | Open-field herd, 8 frames (3 buffalo each) | 3/3 found in every frame, scores 0.82-0.96 |
-| Leave-one-out (each buffalo without its own template) | 0.93, 0.77, 0.93 (threshold 0.72) |
+| Leave-one-out (each buffalo without its own template) | 0.95, 0.76, 0.95 (threshold 0.72) |
+| White sheep on sand, 2 captures (6 sheep each) | 6/6 in both, 0.79-1.00; the 3 held-out sheep 0.85-0.98 |
+| Own scout and villagers on sand | not accepted (best 0.71 before the full-resolution check) |
 | Zoom 0.8x / 1.25x, camera shifts, 1920x1200 | found at the moved / scaled positions (tests) |
 | Herd overlapping at the TC (3 buffalo) | 1 accepted, on an animal; the others rejected (low confidence) |
 | Carcass being gathered | not accepted |
 | 190 frames of a dense base with no herd + all HUD-only fixtures + buffalo pasted on the HUD / minimap | **0** accepted |
 | Red-collared copy of a buffalo | 0 candidates |
-| Time per scan | ~0.2 s early game, ~0.4-0.6 s with a herd at the TC, ~0.85 s median (1.3 s max) in a dense base |
+| Time per scan | ~0.1-0.4 s early game, ~0.45 s with a herd at the TC, ~1.2 s median (2.4 s max) in a dense base |
 
-The leave-one-out margin of buffalo b (0.77 vs 0.72) is the tightest: it is the only one
+The leave-one-out margin of buffalo b (0.76 vs 0.72) is the tightest: it is the only one
 facing left in its own picture, so the others only match it mirrored.
 
 ## Limitations
 
 * **Not validated live yet.** All of the above is offline. See
   [villager_assignment_live_report.md](villager_assignment_live_report.md).
-* **Templates are water buffalo from one map and one zoom.** White sheep, goats, llamas,
-  turkeys, pigs, cows... need their own templates (one CLI command each). The body filter
-  assumes animals are much less saturated than the ground: grass maps are fine, snow and
-  desert maps are not tested.
+* **Templates come from two maps at one zoom**: water buffalo on grass, white sheep on sand.
+  Goats, llamas, turkeys, pigs, cows... need their own templates (one CLI command each).
+  Snow maps are not tested: white sheep on snow will likely fail the body filter.
 * **Player colour is fixed to blue** (`owner_hsv_low/high`). Another colour needs another
   HSV range in the config. A green collar on grass would not work with this approach.
 * **Herded, overlapping animals** under the Town Center are mostly rejected (safe, but the
@@ -178,5 +196,5 @@ facing left in its own picture, so the others only match it mirrored.
   game allows).
 * **Sheep outside the camera view** are not searched for: the controller does not move the
   camera beyond what the idle hotkey does.
-* **Scan time** in a dense base (~1 s) adds to each assignment: one scan to choose, one to
+* **Scan time** in a dense base (~1.2 s, more templates since the sheep were added) adds to each assignment: one scan to choose, one to
   re-check.
