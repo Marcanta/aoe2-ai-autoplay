@@ -317,6 +317,52 @@
       "animals": [],
       "file": "desert_scout.png",
       "note": "own scout cavalry on sand (white rider, blue): scored 0.71 against a sheep template before the full-resolution check"
+    },
+    "goose_savanna_a": {
+      "source": "captures/fixtures/goose_savanna_a.png",
+      "crop": [
+        212,
+        371,
+        220,
+        170
+      ],
+      "animals": [
+        {
+          "id": "ag",
+          "box": [
+            302,
+            441,
+            31,
+            30
+          ],
+          "label": "sheep_living",
+          "note": "goose on savanna; template goose_a cut from here"
+        }
+      ],
+      "file": "goose_savanna_a.png"
+    },
+    "goose_savanna_b": {
+      "source": "captures/fixtures/goose_savanna_b.png",
+      "crop": [
+        561,
+        613,
+        220,
+        170
+      ],
+      "animals": [
+        {
+          "id": "bg",
+          "box": [
+            651,
+            683,
+            31,
+            30
+          ],
+          "label": "sheep_living",
+          "note": "same goose 31 s earlier, elsewhere on the map (held out: no template cut from this frame)"
+        }
+      ],
+      "file": "goose_savanna_b.png"
     }
   }
 }

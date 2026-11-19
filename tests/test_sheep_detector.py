@@ -367,3 +367,32 @@ def test_too_much_player_colour_is_a_collar_mismatch():
     scan = det.detect(place("desert_scout"))
     rider = [c for c in (*scan.sheep, *scan.rejected) if abs(c.x - 407) <= 6 and abs(c.y - 742) <= 6]
     assert rider and all(c.verdict is Verdict.COLLAR_MISMATCH for c in rider), scan.to_dict()
+
+
+# --- goose (savanna map): one template per species ------------------------------------------
+@pytest.mark.parametrize("name", ["goose_savanna_a", "goose_savanna_b"])
+def test_goose_on_savanna_is_found(name):
+    # goose_savanna_b: another frame, another place on the map; no template was cut from it.
+    scan = SheepDetector().detect(place(name))
+    truth = boxes(name)
+    assert len(scan.sheep) == 1, scan.to_dict()
+    assert inside(scan.sheep[0], next(iter(truth.values())), margin=3)
+    assert scan.sheep[0].template.startswith("goose")
+
+
+def test_savanna_ground_is_not_an_animal_body():
+    # Savanna ground is S ~160: a goose's breast (S ~115) and wing (S ~130) must stand out
+    # against it, the ground itself must not.
+    from aoe2_ai.perception.object_detector import animal_pixels, ground_saturation
+
+    img = crop("goose_savanna_b")
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    ground = hsv[:30, :30]
+    local = hsv[..., 1].astype(np.int16) < ground_saturation(hsv) - 40
+    assert (animal_pixels(ground) | local[:30, :30]).mean() < 0.1
+
+
+def test_no_species_template_means_no_target():
+    # Without the goose template, a goose is not a target (safe miss, not a guess).
+    det = SheepDetector(templates=[t for t in TEMPLATES if not t.name.startswith("goose")])
+    assert det.detect(place("goose_savanna_b")).sheep == ()

@@ -132,21 +132,41 @@ def animal_pixels(hsv: np.ndarray, max_saturation: int = 115, bright_saturation:
     return (sat < bright_saturation) | ((sat < max_saturation) & (val < dark_value))
 
 
+def ground_saturation(hsv: np.ndarray, block: int = 48) -> np.ndarray:
+    """Per-pixel estimate of the ground's saturation: the median S of each ``block`` px tile.
+
+    Animals are a small part of any tile, so the median is the terrain. Fixed thresholds failed
+    on savanna (ground S ~160): a goose's breast (S ~115) and grey wing (S ~130) read as ground.
+    """
+    sat = hsv[..., 1]
+    h, w = sat.shape
+    th, tw = -(-h // block), -(-w // block)
+    padded = np.pad(sat, ((0, th * block - h), (0, tw * block - w)), mode="edge")
+    tiles = padded.reshape(th, block, tw, block).transpose(0, 2, 1, 3).reshape(th, tw, -1)
+    med = np.median(tiles, axis=2).astype(np.float32)
+    return cv2.resize(med, (w, h), interpolation=cv2.INTER_LINEAR).astype(np.int16)
+
+
 def extract_template(crop: np.ndarray, owner_low=(100, 100, 80), owner_high=(135, 255, 255),
                      max_saturation: int = 115, margin: int = 20) -> tuple[np.ndarray, np.ndarray] | None:
     """Silhouette of the one animal in ``crop``: (tight BGR image, mask), or None.
 
     Only for cutting templates, where the crop shows one animal on its ground. The ground's
     saturation is taken from the crop border; animal pixels are at least ``margin`` below it
-    (white wool under desert light is S ~80 on sand of S ~115), or dark and desaturated
-    (:func:`animal_pixels`). Thin lines (tile grid, sand ripples) are opened away, and the
-    component holding the collar (player colour) is the animal; without a collar, the largest.
+    (white wool under desert light is S ~80 on sand of S ~115), or both less saturated and
+    clearly darker than it (a goose's grey wing on savanna: S ~130, V ~145 on ground of S ~160,
+    V ~245), or dark and desaturated (:func:`animal_pixels`). Thin lines (tile grid, sand
+    ripples) are opened away, and the component holding the collar (player colour) is the
+    animal; without a collar, the largest.
     """
     hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-    border = np.concatenate([hsv[0, :, 1], hsv[-1, :, 1], hsv[:, 0, 1], hsv[:, -1, 1]])
-    limit = min(max_saturation, int(np.median(border)) - margin)
+    edge = np.concatenate([hsv[0], hsv[-1], hsv[:, 0], hsv[:, -1]])
+    ground_s, ground_v = (int(v) for v in np.median(edge[:, 1:], axis=0))
+    limit = min(max_saturation, ground_s - margin)
+    sat, val = hsv[..., 1].astype(int), hsv[..., 2].astype(int)
+    darker = (sat < ground_s - margin // 2) & (val < 0.75 * ground_v)
     collar = owner_mask(crop, owner_low, owner_high)
-    animal = (hsv[..., 1] < limit) | animal_pixels(hsv, max_saturation, 0) | collar
+    animal = (sat < limit) | darker | animal_pixels(hsv, max_saturation, 0) | collar
     m = cv2.morphologyEx(animal.astype(np.uint8) * 255, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
     m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
     n, labels, stats, _ = cv2.connectedComponentsWithStats(m)
@@ -286,6 +306,8 @@ class SheepDetectorConfig:
     max_saturation: int = 115  # "animal" pixels for the body pre-filter (see animal_pixels)
     bright_saturation: int = 85  # ... any pixel below this saturation, or below max_saturation
     dark_value: int = 170  # ... when darker than this (bright sand is not an animal)
+    ground_margin: int = 40  # ... or this much less saturated than the local ground (ground_saturation)
+    ground_block: int = 48  # px tiles over which the local ground saturation is the median
     min_body_fraction: float = 0.35  # body touching the collar: at least this x the smallest silhouette
     max_body_factor: float = 2.0  # ... and at most this x the largest one (two animals touching still pass)
     size_slack: float = 1.3  # a template may be up to this much larger than the body blob it is matched on
@@ -401,6 +423,7 @@ class SheepDetector:
         owner[~world] = 0
         n, _, stats, centroids = cv2.connectedComponentsWithStats(owner)
         animal = animal_pixels(hsv, cfg.max_saturation, cfg.bright_saturation, cfg.dark_value)
+        animal |= hsv[..., 1].astype(np.int16) < ground_saturation(hsv, cfg.ground_block) - cfg.ground_margin
         body = (animal & world & (owner == 0)).astype(np.uint8)
         _, body_labels, body_stats, _ = cv2.connectedComponentsWithStats(body)
         height, width = owner.shape

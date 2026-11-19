@@ -12,6 +12,7 @@ tests as proof that the controller works in the game.
 | 2026-11-19 | same dry run, after the fix | 6/6 sheep seen every cycle ("6 free of 6"), the same target chosen each time (748-749, 428), scores 0.82-0.97 (held-out sheep). Nothing sent. |
 | 2026-11-19 | Phase A live: `assign-sheep -v --metrics runs/sheep/phase_a` | `.` -> villager verified ("Villa eois" read, conf 0.58, fuzzy-matched) -> sheep at (749, 428), score 0.96 -> right-click -> **SUCCESS** 2.2 s later: panel reads "Berger", idle 3 -> 2. Checked on the after frame: villager at the sheep, cursor tooltip is the sheep's. Answers the open question: the role turns into "Berger" as soon as the order is given (within the first verification frames). |
 | 2026-11-19 | Phase B live: `assign-sheep -v --max-assignments 0 --max-cycles 20 --metrics runs/sheep/phase_b` | 2 idle -> 2 cycles, 2 **SUCCESS** (idle 2 -> 1 -> 0), each 1.6 s after the click. **Different sheep**: mapped onto one frame through the Town Center's shift (template match 0.999), the two targets are 54 px apart; the first is already slain and being gathered, the second a separate living sheep. Then 16 cycles "no idle villagers", no input. Cycle 10: PowerShell in front -> waited, nothing sent, then settled 1 observation on return (partial check of scenario 6). |
+| 2026-11-19 | Phase A live, savanna map, one goose in view | 2 cycles **NO_TARGET**, no right-click, then holds (30 s) as designed; also waited correctly while Claude / PowerShell / Task Switching were in front; stopped by Ctrl+C. Cause: no goose template (detection is per species), and the fixed body thresholds missed a goose on savanna ground (S ~160). Fixed: `goose_a` template from the saved no-target frame, body test against the local ground's saturation. Offline now: goose found in all 11 frames of that run (0.84-1.00), 0 false accepts on 190 base frames. To re-run live. |
 
 ## Setup to record
 
@@ -46,7 +47,7 @@ Start with `--dry-run` to check the detector's choice in the log before any live
 | 1 | | | | | | | | Not run as such (Phase A had 6 sheep in view: see row 2). |
 | 2 | 1 | 1 | 0 | 0 | 0 | 0 | 452 / 1722 (n=6; median 78) | 2026-11-19 (Phase A), desert map, 6 white sheep in view, nearest chosen. P95 is the first observation (OCR start-up). Click to verified SUCCESS: 2.5 s. |
 | 3 | 2 | 2 | 0 | 0 | 0 | 0 | 129 / 921 (n=28; median 52) | 2026-11-19. 2 villagers, 2 different sheep (checked on the frames). Idle 0 afterwards: 16 cycles without input. |
-| 4 | | | | | | | | |
+| 4 | 2 | 0 | 0 | 0 | 0 | 0 | 90 / 56 (n=62) | 2026-11-19, savanna map with a goose but no goose template yet: NO_TARGET twice, no right-click, held 30 s each time (behaves as "no sheep visible"). |
 | 5 | | | | | | | | |
 | 6 | 0 | 0 | 0 | 0 | 0 | 0 | | Partly, during run 3: alt-tab to PowerShell -> "game not detected", no input. Pause not tested. |
 | 7 | | | | | | | | |
