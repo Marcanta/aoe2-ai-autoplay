@@ -1,0 +1,528 @@
+{
+  "description": "Sheep detection dataset: crops of real 1680x1050 AoE2 DE captures (French UI, player 1 blue). On this map the herd animals are water buffalo, the sheep equivalent. Boxes are in source-frame pixels; subtract crop[0:2] for crop pixels.",
+  "items": {
+    "herd_open": {
+      "source": "captures/fixtures/start_20261116_184105.png",
+      "crop": [
+        1180,
+        500,
+        380,
+        260
+      ],
+      "animals": [
+        {
+          "id": "a",
+          "box": [
+            1395,
+            562,
+            57,
+            43
+          ],
+          "label": "sheep_living",
+          "note": "water buffalo, facing right; template water_buffalo_a"
+        },
+        {
+          "id": "b",
+          "box": [
+            1379,
+            610,
+            59,
+            42
+          ],
+          "label": "sheep_living",
+          "note": "water buffalo, facing left; template water_buffalo_b"
+        },
+        {
+          "id": "c",
+          "box": [
+            1299,
+            658,
+            57,
+            41
+          ],
+          "label": "sheep_living",
+          "note": "water buffalo, facing right; template water_buffalo_c"
+        }
+      ],
+      "file": "herd_open.png"
+    },
+    "herd_tc": {
+      "source": "captures/fixtures/eco_20261116_184221.png",
+      "crop": [
+        690,
+        470,
+        280,
+        180
+      ],
+      "animals": [
+        {
+          "id": "d",
+          "box": [
+            788,
+            527,
+            76,
+            38
+          ],
+          "label": "sheep_living",
+          "note": "walking, overlapping f; template water_buffalo_d_walking"
+        },
+        {
+          "id": "e",
+          "box": [
+            742,
+            548,
+            72,
+            42
+          ],
+          "label": "sheep_living",
+          "note": "herded under the Town Center, overlapping f"
+        },
+        {
+          "id": "f",
+          "box": [
+            798,
+            556,
+            66,
+            46
+          ],
+          "label": "sheep_living",
+          "note": "herded, overlapping d and e"
+        }
+      ],
+      "file": "herd_tc.png"
+    },
+    "carcass_gathered": {
+      "source": "captures/fixtures/eco_20261116_184302.png",
+      "crop": [
+        880,
+        400,
+        220,
+        160
+      ],
+      "animals": [
+        {
+          "id": "g",
+          "box": [
+            945,
+            440,
+            80,
+            40
+          ],
+          "label": "sheep_living_occluded",
+          "note": "two standing buffalo overlapping each other and villagers; collars partly hidden"
+        },
+        {
+          "id": "h",
+          "box": [
+            979,
+            468,
+            50,
+            31
+          ],
+          "label": "sheep_carcass",
+          "note": "slain, lying, being gathered; template water_buffalo_carcass_a"
+        }
+      ],
+      "file": "carcass_gathered.png"
+    },
+    "crowd_base": {
+      "source": "runs/validation/tc_tesseract/frame_0031.png",
+      "crop": [
+        600,
+        250,
+        600,
+        400
+      ],
+      "animals": [],
+      "note": "no sheep: villager crowds and houses in the player colour (negatives)",
+      "file": "crowd_base.png"
+    },
+    "grass": {
+      "source": "captures/fixtures/start_20261116_184105.png",
+      "crop": [
+        420,
+        640,
+        360,
+        180
+      ],
+      "animals": [],
+      "note": "grass, bushes and dirt only (background for synthetic frames)",
+      "file": "grass.png"
+    },
+    "desert_sheep": {
+      "source": "captures/fixtures/sheep_20261118_230725.png",
+      "crop": [
+        670,
+        385,
+        520,
+        190
+      ],
+      "animals": [
+        {
+          "id": "s0",
+          "box": [
+            707,
+            427,
+            10,
+            23
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; template sheep_front_a"
+        },
+        {
+          "id": "s1",
+          "box": [
+            740,
+            417,
+            28,
+            26
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; held out (not a template)"
+        },
+        {
+          "id": "s2",
+          "box": [
+            974,
+            404,
+            26,
+            28
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; template sheep_side_c"
+        },
+        {
+          "id": "s3",
+          "box": [
+            1020,
+            533,
+            18,
+            26
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; template sheep_quarter_d"
+        },
+        {
+          "id": "s4",
+          "box": [
+            1068,
+            501,
+            10,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; held out (not a template)"
+        },
+        {
+          "id": "s5",
+          "box": [
+            1150,
+            501,
+            25,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; held out (not a template)"
+        }
+      ],
+      "file": "desert_sheep.png",
+      "note": "the sheep templates sheep_front_a, sheep_side_c, sheep_quarter_d were cut from this capture"
+    },
+    "desert_sheep_2": {
+      "source": "captures/fixtures/shot.png_20261118_225730.png",
+      "crop": [
+        670,
+        385,
+        520,
+        190
+      ],
+      "animals": [
+        {
+          "id": "t0",
+          "box": [
+            707,
+            427,
+            10,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t1",
+          "box": [
+            740,
+            417,
+            28,
+            27
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t2",
+          "box": [
+            974,
+            404,
+            27,
+            29
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t3",
+          "box": [
+            1020,
+            533,
+            18,
+            26
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t4",
+          "box": [
+            1068,
+            501,
+            10,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        },
+        {
+          "id": "t5",
+          "box": [
+            1150,
+            501,
+            25,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "white sheep, desert map; second capture (pose differs from the template frame)"
+        }
+      ],
+      "file": "desert_sheep_2.png"
+    },
+    "desert_scout": {
+      "source": "captures/fixtures/sheep_20261118_230725.png",
+      "crop": [
+        360,
+        700,
+        120,
+        110
+      ],
+      "animals": [],
+      "file": "desert_scout.png",
+      "note": "own scout cavalry on sand (white rider, blue): scored 0.71 against a sheep template before the full-resolution check"
+    },
+    "goose_savanna_a": {
+      "source": "captures/fixtures/goose_savanna_a.png",
+      "crop": [
+        212,
+        371,
+        220,
+        170
+      ],
+      "animals": [
+        {
+          "id": "ag",
+          "box": [
+            302,
+            441,
+            31,
+            30
+          ],
+          "label": "sheep_living",
+          "note": "goose on savanna; template goose_a cut from here"
+        }
+      ],
+      "file": "goose_savanna_a.png"
+    },
+    "goose_savanna_b": {
+      "source": "captures/fixtures/goose_savanna_b.png",
+      "crop": [
+        561,
+        613,
+        220,
+        170
+      ],
+      "animals": [
+        {
+          "id": "bg",
+          "box": [
+            651,
+            683,
+            31,
+            30
+          ],
+          "label": "sheep_living",
+          "note": "same goose 31 s earlier, elsewhere on the map (held out: no template cut from this frame)"
+        }
+      ],
+      "file": "goose_savanna_b.png"
+    },
+    "pig_winter_04": {
+      "source": "captures/fixtures/pig_arabia_winter_04.png",
+      "crop": [
+        760,
+        300,
+        340,
+        140
+      ],
+      "animals": [
+        {
+          "id": "p04a",
+          "box": [
+            815,
+            329,
+            42,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; template pig_a"
+        },
+        {
+          "id": "p04b",
+          "box": [
+            904,
+            377,
+            38,
+            23
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; template pig_b"
+        },
+        {
+          "id": "p04c",
+          "box": [
+            1012,
+            377,
+            36,
+            24
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p04d",
+          "box": [
+            1051,
+            402,
+            34,
+            21
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        }
+      ],
+      "file": "pig_winter_04.png",
+      "note": "winter Arabia, four pigs: pig_a and pig_b cut from two of them"
+    },
+    "pig_winter_10": {
+      "source": "captures/fixtures/pig_arabia_winter_10.png",
+      "crop": [
+        680,
+        200,
+        320,
+        200
+      ],
+      "animals": [
+        {
+          "id": "p10a",
+          "box": [
+            711,
+            233,
+            34,
+            17
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10b",
+          "box": [
+            797,
+            278,
+            32,
+            23
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10c",
+          "box": [
+            896,
+            278,
+            31,
+            17
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10d",
+          "box": [
+            932,
+            302,
+            36,
+            21
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10e",
+          "box": [
+            836,
+            350,
+            33,
+            24
+          ],
+          "label": "sheep_living",
+          "note": "pig, held out; overlaps p10f (box drawn by hand)"
+        },
+        {
+          "id": "p10f",
+          "box": [
+            865,
+            362,
+            33,
+            25
+          ],
+          "label": "sheep_living",
+          "note": "pig, held out; overlaps p10e (box drawn by hand)"
+        }
+      ],
+      "file": "pig_winter_10.png",
+      "note": "same game ~1.5 min later, six pigs (two overlapping): none used as a template"
+    },
+    "fog_berries_winter": {
+      "source": "captures/fixtures/pig_arabia_winter_07.png",
+      "crop": [
+        140,
+        190,
+        170,
+        130
+      ],
+      "animals": [],
+      "file": "fog_berries_winter.png",
+      "note": "berry bushes under blue fog of war (winter map): the fog reads as player blue; 8 false accepts in this game before the collar isolation check"
+    },
+    "frost_winter": {
+      "source": "captures/fixtures/pig_arabia_winter_05.png",
+      "crop": [
+        1470,
+        720,
+        130,
+        100
+      ],
+      "animals": [],
+      "file": "frost_winter.png",
+      "note": "frost patch on winter ground: one false accept before the collar isolation check"
+    }
+  }
+}

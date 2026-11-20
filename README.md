@@ -126,6 +126,18 @@ python -m aoe2_ai.controllers idle-villager                 # live; same stop ke
 
 Details, the perception investigation and the repeat-prevention rules: [docs/idle_villager_controller.md](docs/idle_villager_controller.md).
 
+## Villager assignment (sheep)
+
+`aoe2_ai/controllers/villager_assignment.py` sends idle villagers, one at a time, to gather from a visible sheep: select with `.`, verify a villager is selected, find the player's own sheep on screen (`aoe2_ai/perception/object_detector.py`: player-colour collar + masked OpenCV template matching, world area only), re-check right before the click, right-click it, then verify the villager became a shepherd. Anything uncertain means no click, and a villager is never commanded twice.
+
+```powershell
+python -m aoe2_ai.controllers assign-sheep --dry-run -v          # detect and log, send nothing
+python -m aoe2_ai.controllers assign-sheep                        # one verified assignment, then stop
+python -m aoe2_ai.controllers assign-sheep --max-assignments 0    # every idle villager, one per cycle
+```
+
+Not validated in a live game yet. Detection, thresholds, results and limitations: [docs/villager_assignment.md](docs/villager_assignment.md); live test protocol: [docs/villager_assignment_live_report.md](docs/villager_assignment_live_report.md).
+
 ## Safety
 
 `pyautogui` has a built-in **fail-safe**: slam the mouse into any **screen corner** to abort the agent immediately. Keep it enabled. The controllers also stop on **F12** or **Pause** (`--stop-key`) and Ctrl+C, and never send input unless Age of Empires II is the foreground window.
@@ -135,6 +147,7 @@ Details, the perception investigation and the repeat-prevention rules: [docs/idl
 - [ ] Reliable game-window capture and resolution handling
 - [x] Read resources, population, game time, age and selected object from the HUD (`aoe2_ai/perception`)
 - [x] Idle villagers: detect and select (`aoe2_ai/controllers/idle_villager.py`)
+- [ ] Villager assignment: idle villager -> own sheep (`aoe2_ai/controllers/villager_assignment.py`; offline-tested, live validation pending)
 - [ ] Faster OCR
 - [x] Town Center: queue idle/producing, villager button (`aoe2_ai/perception/town_center.py`)
 - [x] Safe action execution and a deterministic villager-production controller
