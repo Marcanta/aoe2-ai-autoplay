@@ -363,6 +363,166 @@
         }
       ],
       "file": "goose_savanna_b.png"
+    },
+    "pig_winter_04": {
+      "source": "captures/fixtures/pig_arabia_winter_04.png",
+      "crop": [
+        760,
+        300,
+        340,
+        140
+      ],
+      "animals": [
+        {
+          "id": "p04a",
+          "box": [
+            815,
+            329,
+            42,
+            22
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; template pig_a"
+        },
+        {
+          "id": "p04b",
+          "box": [
+            904,
+            377,
+            38,
+            23
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; template pig_b"
+        },
+        {
+          "id": "p04c",
+          "box": [
+            1012,
+            377,
+            36,
+            24
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p04d",
+          "box": [
+            1051,
+            402,
+            34,
+            21
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        }
+      ],
+      "file": "pig_winter_04.png",
+      "note": "winter Arabia, four pigs: pig_a and pig_b cut from two of them"
+    },
+    "pig_winter_10": {
+      "source": "captures/fixtures/pig_arabia_winter_10.png",
+      "crop": [
+        680,
+        200,
+        320,
+        200
+      ],
+      "animals": [
+        {
+          "id": "p10a",
+          "box": [
+            711,
+            233,
+            34,
+            17
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10b",
+          "box": [
+            797,
+            278,
+            32,
+            23
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10c",
+          "box": [
+            896,
+            278,
+            31,
+            17
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10d",
+          "box": [
+            932,
+            302,
+            36,
+            21
+          ],
+          "label": "sheep_living",
+          "note": "pig, winter Arabia; held out"
+        },
+        {
+          "id": "p10e",
+          "box": [
+            836,
+            350,
+            33,
+            24
+          ],
+          "label": "sheep_living",
+          "note": "pig, held out; overlaps p10f (box drawn by hand)"
+        },
+        {
+          "id": "p10f",
+          "box": [
+            865,
+            362,
+            33,
+            25
+          ],
+          "label": "sheep_living",
+          "note": "pig, held out; overlaps p10e (box drawn by hand)"
+        }
+      ],
+      "file": "pig_winter_10.png",
+      "note": "same game ~1.5 min later, six pigs (two overlapping): none used as a template"
+    },
+    "fog_berries_winter": {
+      "source": "captures/fixtures/pig_arabia_winter_07.png",
+      "crop": [
+        140,
+        190,
+        170,
+        130
+      ],
+      "animals": [],
+      "file": "fog_berries_winter.png",
+      "note": "berry bushes under blue fog of war (winter map): the fog reads as player blue; 8 false accepts in this game before the collar isolation check"
+    },
+    "frost_winter": {
+      "source": "captures/fixtures/pig_arabia_winter_05.png",
+      "crop": [
+        1470,
+        720,
+        130,
+        100
+      ],
+      "animals": [],
+      "file": "frost_winter.png",
+      "note": "frost patch on winter ground: one false accept before the collar isolation check"
     }
   }
 }

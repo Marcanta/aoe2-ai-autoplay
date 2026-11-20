@@ -91,39 +91,58 @@ All in screen pixels, OpenCV only (`SheepDetector.detect(frame)` -> `SheepScan`)
    Rectangles are measured at 1680x1050 and scaled like the HUD regions.
 2. **Candidates = the player's collar.** A herd animal the player owns wears a collar in the
    player colour. Compact blobs of that colour (HSV 100-135 hue, S >= 100, V >= 80 for blue),
-   6-250 px at the default zoom, that touch an animal-coloured blob of animal size (0.35x to
-   2x a template silhouette) are the candidates. Animal-coloured = very desaturated (S < 85:
-   white wool, grey), or moderately desaturated *and* dark (S < 115, V < 170: buffalo), or at
-   least 40 below the **local ground's** saturation (`ground_saturation`: median S of each
-   48 px tile). Grass is saturated; sand is moderately desaturated (S ~105-125) but bright;
-   savanna ground is S ~160, against which a goose's breast (S ~115) and grey wing (S ~130)
-   stand out. Each fixed-threshold version failed on one map live: a plain S < 115 turned
-   the whole desert into one "body", and fixed S/V cuts missed the goose on savanna. Enemy sheep (other collar colour) and
-   neutral ones never become candidates. Villagers and buildings also carry the colour; the
-   body-size test removes most of them cheaply.
+   6-250 px at the default zoom, are kept when:
+   * **they are isolated**: within 1.5x their size, under 15% of the surroundings are bluish
+     (hue 95-140, S > 60). On a winter map the fog of war, water and frost are blue too
+     (S 118-151, the same as collars): they produced 8 false targets over berry bushes and
+     filled the 80-candidate cap until this check;
+   * **they touch an animal-coloured body of animal size** (0.35x to 2x a template
+     silhouette). Animal-coloured is judged **only against the local ground**
+     (`ground_hsv`: median S and V of each 48 px tile; `animal_pixels`): at least 30 less
+     saturated than the ground, or darker than 0.7x its brightness and 10 less saturated.
+     Every fixed threshold tried failed on some map live: S < 115 swallowed desert sand
+     (S ~115), fixed S/V cuts missed a goose on savanna (ground S ~160), and S < 85 swallowed
+     frosty winter ground (S ~75) around pigs.
+
+   Enemy sheep (other collar colour) and neutral ones never become candidates. Villagers and
+   buildings also carry the colour; the body test removes most of them cheaply.
 3. **Template verification.** Masked `TM_CCOEFF_NORMED` (the silhouette is the mask, so the
-   grass behind a template does not count) at half resolution, every template and its
-   mirror, at the zooms 0.7-1.4 whose size fits the body blob. A probe at the two zooms
-   closest to the body size runs first; under 0.45 the candidate is dropped. Only
-   placements whose box contains the collar are considered.
+   ground behind a template does not count) at half resolution, every template and its
+   mirror, at the zooms 0.7-1.4 whose size fits the body blob (up to 1.6x larger, since legs
+   and pale parts may not count as body; at most 1.3x smaller, or a pig template fits a roof). A probe at the two zooms closest to the body size runs
+   first; under 0.45 the candidate is dropped. Only placements whose box contains the collar
+   are considered.
 4. **Full-resolution re-score.** The best half-resolution match is scored again at full
    resolution, +-3 px around it; that score is the one compared with the thresholds. At
    half resolution a sheep template at the smallest zoom is ~4x8 px, and female villagers
-   (white apron, blue dress) scored 0.72-0.78 there; at full resolution 0.60-0.70, while
-   real animals score 0.76-1.00.
+   (white apron, blue dress) scored 0.72-0.78 there; at full resolution 0.60-0.73.
+   Collar blobs must also be compact (area >= 25% of their box): a house roof's blue trim
+   (a thin diagonal line, 14%) was otherwise taken for a pig's collar.
 5. **Collar share.** The player colour inside the matched silhouette must be 0.5x-1.6x the
    template's own collar share. Real animals: 0.88-1.17x; the scout's rider: 1.9-2.7x.
-6. **Classification** (`Verdict`):
+6. **Click point**: the point of the body farthest from both its edge and its collar
+   (distance transform of the silhouette minus the collar). It must have no player colour
+   around it (5 px): otherwise something blue (a villager) is in front of the animal.
+7. **Classification** (`Verdict`):
 
 | Verdict | Rule | Clicked? |
 |---|---|---|
-| ACCEPTED | living score >= **0.72**, inside the world, no conflict | yes |
-| LOW_CONFIDENCE | 0.55 <= score < 0.72 | no |
+| ACCEPTED | living score >= **0.75**, inside the world, no conflict | yes |
+| LOW_CONFIDENCE | 0.55 <= score < 0.75 | no |
 | CARCASS | a carcass template beats every living one | no |
 | AMBIGUOUS | a carcass template within 0.05 of the living score | no |
 | COLLAR_MISMATCH | player colour share outside 0.5x-1.6x of the template's | no |
 | OUTSIDE_WORLD | box touches the HUD, minimap or a screen edge | no |
-| OVERLAP | box overlaps another detected animal (IoU > 0.15) | no |
+| OVERLAP | overlaps a rejected look-alike (rider, carcass, ambiguous; IoU > 0.15), or player colour under the click point | no |
+
+**Overlapping herd animals are clickable** (`allow_herd_overlap`, on by default; decided
+2026-11-20): animals pushed under the Town Center overlap, and a click on either one sends
+the villager to a player's animal. `allow_herd_overlap=false` restores the stricter rule
+(any overlap = no click).
+
+The accept bar is 0.75 (it was 0.72): a villager on grass scored 0.73 against a sheep
+template. Known cost: buffalo b without its own template scores 0.74 and is missed
+(`xfail` test), and one desert sheep in one capture is at 0.74.
 
 Below 0.55 a candidate is not reported. A scan on a missing / unusable frame, or with no
 templates, is `UNKNOWN`: "could not look", never "no sheep".
@@ -133,8 +152,10 @@ templates, is `UNKNOWN`: "could not look", never "no sheep".
 **One template set per species.** AoE2 has many herdables (sheep, goose, turkey, llama, pig,
 cow, goat, water buffalo...), each map picks some, and they share only the player collar. The
 detector recognises a species only once it has a template of it: without one the animal is
-not a target (a safe miss, logged as "no sheep visible"). Captured so far: **water buffalo**
-on grass, **white sheep** on a desert map, and a **goose** on savanna. Templates:
+not a target (a safe miss, logged as "no sheep visible"). The species varies on the same map
+too: on Arabia white sheep in one game, pigs in another. Captured so far: **water buffalo**
+on grass, **white sheep** on a desert Arabia, a **goose** on savanna, and **pigs** on a winter
+Arabia. Templates:
 
 | Template | From | Pose |
 |---|---|---|
@@ -146,6 +167,8 @@ on grass, **white sheep** on a desert map, and a **goose** on savanna. Templates
 | `living/sheep_side_c` | same | side view, head up |
 | `living/sheep_quarter_d` | same | three-quarter view |
 | `living/goose_a` | `goose_savanna_a` (live run 2026-11-19, saved "no target" frame) | walking, facing right |
+| `living/pig_a` | `pig_arabia_winter_04` (dry run 2026-11-20) | side view, facing right |
+| `living/pig_b` | same | side view, facing left |
 | `carcass/water_buffalo_carcass_a` | `eco_20261116_184302`, being gathered | lying, head hidden by a villager |
 
 Mirrored versions are generated at load time. **Adding a species**, when a run says "no sheep
@@ -168,39 +191,45 @@ holds crops of real frames: the open-field herd, the herd overlapping under the 
 a carcass being gathered next to two standing buffalo, a dense base with villager crowds and
 houses (negatives), plain grass, six white sheep on sand in two captures (three of them never
 used as templates), the player's scout on sand (negative), and a goose on savanna in two
-frames (one held out). Tests paste them into a real HUD frame.
+frames (one held out), pigs on a winter Arabia in two frames (all six of the later one held
+out, two overlapping), and blue fog over berries and frost from that game (negatives). Tests
+paste them into a real HUD frame.
 
 ### Offline results (1680x1050 captures)
 
 | Check | Result |
 |---|---|
 | Open-field herd, 8 frames (3 buffalo each) | 3/3 found in every frame, scores 0.82-0.96 |
-| Leave-one-out (each buffalo without its own template) | 0.95, 0.76, 0.95 (threshold 0.72) |
+| Leave-one-out (each buffalo without its own template) | 0.95, **0.74 (missed)**, 0.95 (threshold 0.75) |
 | White sheep on sand, 2 captures (6 sheep each) | 6/6 in both, 0.79-1.00; the 3 held-out sheep 0.85-0.98 |
 | Own scout and villagers on sand | not accepted (best 0.71 before the full-resolution check) |
 | Goose on savanna, 11 frames of the 2026-11-19 run (3 positions) | found in all, 0.84-1.00; the held-out frame 0.98 |
+| Pigs on winter Arabia, 13 frames of the 2026-11-20 dry run | 36 accepted, all on pigs (checked by eye); frame 10: 4 of 6 held-out pigs (the overlapping pair missed) |
+| Blue fog over berries, frost, the Town Center's fence (same game) | not accepted (11 false accepts before the collar isolation check and the 0.75 bar) |
 | Zoom 0.8x / 1.25x, camera shifts, 1920x1200 | found at the moved / scaled positions (tests) |
 | Herd overlapping at the TC (3 buffalo) | 1 accepted, on an animal; the others rejected (low confidence) |
 | Carcass being gathered | not accepted |
 | 190 frames of a dense base with no herd + all HUD-only fixtures + buffalo pasted on the HUD / minimap | **0** accepted |
 | Red-collared copy of a buffalo | 0 candidates |
-| Time per scan | ~0.2-0.4 s early game, ~1.7 s median in a dense base (80-candidate cap reached: logged) |
+| Time per scan | 0.1-0.8 s on most early-game frames, up to ~3 s on busy winter frames, ~2.5-3.7 s median in a dense base (80-candidate cap reached there: logged) |
 
-The leave-one-out margin of buffalo b (0.76 vs 0.72) is the tightest: it is the only one
-facing left in its own picture, so the others only match it mirrored.
+Buffalo b is the only one facing left in its own picture, so without its own template the
+others only match it mirrored: 0.74, under the bar.
 
 ## Limitations
 
 * **Live validation**: 3 assignments on the desert map so far, all SUCCESS; see
   [villager_assignment_live_report.md](villager_assignment_live_report.md).
-* **Only the captured species are recognised**: water buffalo, white sheep, goose, each in one
-  or a few poses at one zoom. Turkeys, llamas, pigs, cows, goats... need their own templates
+* **Only the captured species are recognised**: water buffalo, white sheep, goose, pig, each
+  in one or a few poses at one zoom. Pigs facing the camera are matched by the sheep templates
+  (correct clicks, but by luck of shape); a proper front-facing pig template is missing. Turkeys, llamas, pigs, cows, goats... need their own templates
   (see "Adding a species"). Snow maps are not tested: white sheep on snow may not stand out
   from the ground.
 * **Player colour is fixed to blue** (`owner_hsv_low/high`). Another colour needs another
   HSV range in the config. A green collar on grass would not work with this approach.
-* **Herded, overlapping animals** under the Town Center are mostly rejected (safe, but the
-  controller may then find "no target" where a human sees sheep).
+* **Herded, overlapping animals** are clickable now, but matching itself degrades when they
+  overlap heavily (one template covers parts of two animals): under the Town Center some are
+  still missed.
 * **Carcasses**: one carcass template, from one partly hidden carcass. A carcass with no
   visible collar is never a candidate anyway; one with a visible collar is caught only if
   the carcass template scores close to it.
@@ -213,6 +242,6 @@ facing left in its own picture, so the others only match it mirrored.
   game allows).
 * **Sheep outside the camera view** are not searched for: the controller does not move the
   camera beyond what the idle hotkey does.
-* **Scan time** grows with the number of templates (8 living views now): ~1.7 s in a dense
-  base, where the 80-candidate cap can also be reached (some animals may then be missed;
+* **Scan time** grows with the number of templates (10 living views now): up to ~3 s on busy
+  early-game frames and ~2.5-3.7 s in a dense base, where the 80-candidate cap can also be reached (some animals may then be missed;
   the scan reason says so). Each assignment scans twice (choose, re-check).

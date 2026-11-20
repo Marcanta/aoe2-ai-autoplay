@@ -104,11 +104,23 @@ class HerdTemplate:
 
     @property
     def anchor(self) -> tuple[float, float]:
-        """Centroid of the silhouette, as fractions of (w, h): where to click."""
-        ys, xs = np.nonzero(self.mask)
-        if xs.size == 0:
+        """Where to click, as fractions of (w, h): the point of the body farthest from both the
+        silhouette's edge and the collar. On an animal facing the camera the collar sits at the
+        centroid; clicking the body away from it keeps the click-point check (no player colour
+        under the click) meaningful."""
+        body = (self.mask > 0).astype(np.uint8)
+        if not body.any():
             return 0.5, 0.5
-        return float(xs.mean() + 0.5) / self.mask.shape[1], float(ys.mean() + 0.5) / self.mask.shape[0]
+        collar = owner_mask(self.image, (100, 100, 80), (135, 255, 255)) & (body > 0)
+        if collar.any():
+            near = cv2.dilate(collar.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+            away = body.copy()
+            away[near] = 0
+            if away.sum() >= 0.2 * body.sum():
+                body = away
+        dist = cv2.distanceTransform(np.pad(body, 1), cv2.DIST_L2, 3)[1:-1, 1:-1]
+        y, x = np.unravel_index(int(np.argmax(dist)), dist.shape)
+        return (x + 0.5) / self.mask.shape[1], (y + 0.5) / self.mask.shape[0]
 
     def flipped(self) -> "HerdTemplate":
         return HerdTemplate(f"{self.name}~flip", self.kind, np.ascontiguousarray(self.image[:, ::-1]),
@@ -120,53 +132,56 @@ def owner_mask(bgr: np.ndarray, low: tuple[int, int, int], high: tuple[int, int,
     return cv2.inRange(hsv, np.array(low, np.uint8), np.array(high, np.uint8)) > 0
 
 
-def animal_pixels(hsv: np.ndarray, max_saturation: int = 115, bright_saturation: int = 85,
-                  dark_value: int = 170) -> np.ndarray:
-    """Pixels that may belong to a herd animal: very desaturated (white sheep, grey), or
-    moderately desaturated *and* dark (brown / black animals).
+def animal_pixels(hsv: np.ndarray, ground_s, ground_v, margin: int = 30, dark_ratio: float = 0.7,
+                  dark_margin: int = 10) -> np.ndarray:
+    """Pixels that may belong to a herd animal, judged against the ground under them.
 
-    The terrain is the opposite: grass is saturated; sand is moderately desaturated but
-    bright (S 105-125, V > 220 on the desert map), so it must not count as an animal.
+    An animal pixel is clearly less saturated than the ground (``margin`` below it: white
+    sheep, pale pigs, grey geese), or clearly darker and somewhat less saturated (``dark_ratio``
+    of its brightness, ``dark_margin`` below its saturation: buffalo, a goose's grey wing).
+    ``ground_s`` / ``ground_v`` are scalars or per-pixel arrays (:func:`ground_hsv`).
+
+    Every fixed threshold tried failed on some map live: S < 115 swallowed desert sand
+    (S ~115), fixed S/V cuts missed a goose on savanna (ground S ~160), and S < 85 swallowed
+    frosty winter ground (S ~75) around pigs. Shadows on grass and sand are *more* saturated
+    than the ground, so they do not count.
     """
-    sat, val = hsv[..., 1], hsv[..., 2]
-    return (sat < bright_saturation) | ((sat < max_saturation) & (val < dark_value))
+    sat, val = hsv[..., 1].astype(np.int16), hsv[..., 2].astype(np.int16)
+    gs = np.asarray(ground_s, np.int16)
+    gv = np.asarray(ground_v, np.float32)
+    return (sat < gs - margin) | ((val < dark_ratio * gv) & (sat < gs - dark_margin))
 
 
-def ground_saturation(hsv: np.ndarray, block: int = 48) -> np.ndarray:
-    """Per-pixel estimate of the ground's saturation: the median S of each ``block`` px tile.
+def ground_hsv(hsv: np.ndarray, block: int = 48) -> tuple[np.ndarray, np.ndarray]:
+    """Per-pixel estimate of the ground's (saturation, value): the median of each ``block`` px tile.
 
-    Animals are a small part of any tile, so the median is the terrain. Fixed thresholds failed
-    on savanna (ground S ~160): a goose's breast (S ~115) and grey wing (S ~130) read as ground.
+    Animals are a small part of any tile, so the median is the terrain.
     """
-    sat = hsv[..., 1]
-    h, w = sat.shape
+    h, w = hsv.shape[:2]
     th, tw = -(-h // block), -(-w // block)
-    padded = np.pad(sat, ((0, th * block - h), (0, tw * block - w)), mode="edge")
-    tiles = padded.reshape(th, block, tw, block).transpose(0, 2, 1, 3).reshape(th, tw, -1)
-    med = np.median(tiles, axis=2).astype(np.float32)
-    return cv2.resize(med, (w, h), interpolation=cv2.INTER_LINEAR).astype(np.int16)
+    out = []
+    for ch in (1, 2):
+        padded = np.pad(hsv[..., ch], ((0, th * block - h), (0, tw * block - w)), mode="edge")
+        tiles = padded.reshape(th, block, tw, block).transpose(0, 2, 1, 3).reshape(th, tw, -1)
+        med = np.median(tiles, axis=2).astype(np.float32)
+        out.append(cv2.resize(med, (w, h), interpolation=cv2.INTER_LINEAR))
+    return out[0].astype(np.int16), out[1]
 
 
 def extract_template(crop: np.ndarray, owner_low=(100, 100, 80), owner_high=(135, 255, 255),
-                     max_saturation: int = 115, margin: int = 20) -> tuple[np.ndarray, np.ndarray] | None:
+                     margin: int = 30) -> tuple[np.ndarray, np.ndarray] | None:
     """Silhouette of the one animal in ``crop``: (tight BGR image, mask), or None.
 
-    Only for cutting templates, where the crop shows one animal on its ground. The ground's
-    saturation is taken from the crop border; animal pixels are at least ``margin`` below it
-    (white wool under desert light is S ~80 on sand of S ~115), or both less saturated and
-    clearly darker than it (a goose's grey wing on savanna: S ~130, V ~145 on ground of S ~160,
-    V ~245), or dark and desaturated (:func:`animal_pixels`). Thin lines (tile grid, sand
-    ripples) are opened away, and the component holding the collar (player colour) is the
-    animal; without a collar, the largest.
+    Only for cutting templates, where the crop shows one animal on its ground. The ground is
+    the median of the crop border; animal pixels are :func:`animal_pixels` against it, plus the
+    collar. Thin lines (tile grid, sand ripples, frost) are opened away, and the component
+    holding the collar (player colour) is the animal; without a collar, the largest.
     """
     hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
     edge = np.concatenate([hsv[0], hsv[-1], hsv[:, 0], hsv[:, -1]])
     ground_s, ground_v = (int(v) for v in np.median(edge[:, 1:], axis=0))
-    limit = min(max_saturation, ground_s - margin)
-    sat, val = hsv[..., 1].astype(int), hsv[..., 2].astype(int)
-    darker = (sat < ground_s - margin // 2) & (val < 0.75 * ground_v)
     collar = owner_mask(crop, owner_low, owner_high)
-    animal = (sat < limit) | darker | animal_pixels(hsv, max_saturation, 0) | collar
+    animal = animal_pixels(hsv, ground_s, ground_v, margin) | collar
     m = cv2.morphologyEx(animal.astype(np.uint8) * 255, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
     m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
     n, labels, stats, _ = cv2.connectedComponentsWithStats(m)
@@ -293,26 +308,38 @@ class SheepDetectorConfig:
     collar_min_area: int = 6
     collar_max_area: int = 250
     collar_max_side: int = 30
+    collar_min_fill: float = 0.25  # blob area / bounding box: collars are compact bands, trims are lines
     scales: tuple[float, ...] = (0.7, 0.85, 1.0, 1.2, 1.4)  # camera zoom levels searched
     work_scale: float = 0.5  # matching runs on a downscaled copy (4x fewer pixels)
-    accept: float = 0.72  # living-template score to accept a sheep
+    accept: float = 0.75  # living-template score to accept a sheep
     report_low: float = 0.55  # below this a candidate is not reported at all (not sheep-like)
-    probe_min: float = 0.45  # one-zoom probe score under which the full zoom sweep is skipped
+    probe_min: float = 0.45  # probe score under which the full zoom sweep is skipped
+    probe_scales: int = 2  # zooms closest to the body size tried in the probe
     carcass_margin: float = 0.05  # carcass within this of the living score -> ambiguous
     # Player colour inside the matched silhouette, relative to the template's own collar share.
     # Real animals: 0.88-1.17x; a scout's rider 1.9x; a villager matched by shape 0.08x.
     collar_share_band: tuple[float, float] = (0.5, 1.6)
     refine_radius: int = 3  # px: full-resolution re-scoring around the half-resolution match
-    max_saturation: int = 115  # "animal" pixels for the body pre-filter (see animal_pixels)
-    bright_saturation: int = 85  # ... any pixel below this saturation, or below max_saturation
-    dark_value: int = 170  # ... when darker than this (bright sand is not an animal)
-    ground_margin: int = 40  # ... or this much less saturated than the local ground (ground_saturation)
-    ground_block: int = 48  # px tiles over which the local ground saturation is the median
+    # Body pre-filter, against the local ground (animal_pixels, ground_hsv).
+    ground_margin: int = 30  # animal: this much less saturated than the ground...
+    dark_ratio: float = 0.7  # ... or darker than this x the ground's brightness
+    dark_margin: int = 10  # ... and this much less saturated
+    ground_block: int = 48  # px tiles over which the ground is the median
     min_body_fraction: float = 0.35  # body touching the collar: at least this x the smallest silhouette
     max_body_factor: float = 2.0  # ... and at most this x the largest one (two animals touching still pass)
-    size_slack: float = 1.3  # a template may be up to this much larger than the body blob it is matched on
+    size_slack: float = 1.6  # a template may be up to this much larger than the body blob (legs and pale parts may not count as body)
+    min_size_slack: float = 1.3  # ... and at most this much smaller (1.6 here let a pig template onto a house roof)
     merge_distance: int = 14  # collar blobs closer than this are one candidate
-    overlap_iou: float = 0.15  # accepted animals overlapping more than this are both rejected
+    overlap_iou: float = 0.15  # overlap (IoU) above which two detections count as overlapping
+    allow_herd_overlap: bool = True  # overlapping accepted animals stay clickable (herd under the TC)
+    click_clearance: int = 5  # px radius around the click point...
+    max_owner_under_click: float = 0.2  # ... where player colour above this share means "not clear"
+    # Collar isolation: bluish pixels (hue, min saturation) around a collar blob, within
+    # collar_surround x its size, must stay under max_blue_surround (fog of war, water, frost).
+    bluish_hue: tuple[int, int] = (95, 140)
+    bluish_min_saturation: int = 60
+    collar_surround: float = 1.5
+    max_blue_surround: float = 0.15
     duplicate_iou: float = 0.5  # matches overlapping more than this are one animal
     max_candidates: int = 80
 
@@ -387,7 +414,7 @@ class SheepDetector:
             cand = self._verify(frame, world, prepared, cx, cy, bw, bh)
             if cand is not None:
                 found.append(cand)
-        sheep, rejected = self._classify(found)
+        sheep, rejected = self._classify(found, hsv)
         reason = f"{len(sheep)} sheep, {len(rejected)} rejected, {len(centres)} candidates"
         if truncated:
             reason += f" (candidate limit {cfg.max_candidates} reached: some sheep may be missed)"
@@ -422,16 +449,29 @@ class SheepDetector:
         owner = cv2.inRange(hsv, np.array(cfg.owner_hsv_low, np.uint8), np.array(cfg.owner_hsv_high, np.uint8))
         owner[~world] = 0
         n, _, stats, centroids = cv2.connectedComponentsWithStats(owner)
-        animal = animal_pixels(hsv, cfg.max_saturation, cfg.bright_saturation, cfg.dark_value)
-        animal |= hsv[..., 1].astype(np.int16) < ground_saturation(hsv, cfg.ground_block) - cfg.ground_margin
+        ground_s, ground_v = ground_hsv(hsv, cfg.ground_block)
+        animal = animal_pixels(hsv, ground_s, ground_v, cfg.ground_margin, cfg.dark_ratio, cfg.dark_margin)
         body = (animal & world & (owner == 0)).astype(np.uint8)
         _, body_labels, body_stats, _ = cv2.connectedComponentsWithStats(body)
         height, width = owner.shape
         reach = max(2, round(3 * ui))
+        # A collar is a small blue patch on a non-blue animal and ground. Blue fog of war (winter
+        # maps), water and frost are blue all around: their blobs are dropped here. Integral
+        # image of "bluish" pixels, so each check is O(1).
+        hue, sat = hsv[..., 0], hsv[..., 1]
+        bluish = ((hue >= cfg.bluish_hue[0]) & (hue <= cfg.bluish_hue[1]) & (sat > cfg.bluish_min_saturation)).astype(np.uint8)
+        integral = cv2.integral(bluish, sdepth=cv2.CV_32S)
         blobs = []
         for k in range(1, n):
             x, y, w, h, area = stats[k]
             if not (min_area <= area <= max_area and w <= max_side and h <= max_side):
+                continue
+            if area < cfg.collar_min_fill * w * h:
+                continue  # thin or diagonal line (a roof's blue trim fills 14% of its box; collars 33-71%)
+            pad = max(reach, round(cfg.collar_surround * max(w, h)))
+            x0, y0, x1, y1 = max(0, x - pad), max(0, y - pad), min(width, x + w + pad), min(height, y + h + pad)
+            blue_around = (integral[y1, x1] - integral[y0, x1] - integral[y1, x0] + integral[y0, x0]) - area
+            if blue_around > cfg.max_blue_surround * max(1, (x1 - x0) * (y1 - y0) - area):
                 continue
             ring = body_labels[max(0, y - reach):min(height, y + h + reach), max(0, x - reach):min(width, x + w + reach)]
             ids, counts = np.unique(ring[ring > 0], return_counts=True)
@@ -457,7 +497,7 @@ class SheepDetector:
         slack = cfg.size_slack
         fit = [p for p in prepared
                if p.full_size[0] <= slack * bw and p.full_size[1] <= slack * bh  # not bigger than the body
-               and p.full_size[0] * p.full_size[1] * slack * slack >= bw * bh / cfg.max_body_factor]  # nor far smaller
+               and p.full_size[0] * p.full_size[1] * cfg.min_size_slack ** 2 >= bw * bh / cfg.max_body_factor]  # nor far smaller
         if not fit:
             return None
         max_w = max(p.full_size[0] for p in fit)
@@ -497,7 +537,7 @@ class SheepDetector:
         # touching animals make one bigger body). Most non-animals (villager crowds, house
         # fronts) stop here, before the full sweep.
         sizes = {p.scale: p.full_size[0] * p.full_size[1] for p in living}
-        probe = sorted(sizes, key=lambda s: abs(np.log(max(1, bw * bh) / max(1, sizes[s]))))[:2]
+        probe = sorted(sizes, key=lambda s: abs(np.log(max(1, bw * bh) / max(1, sizes[s]))))[:cfg.probe_scales]
         for p in living:
             if p.scale in probe:
                 match(p)
@@ -572,7 +612,15 @@ class SheepDetector:
         own = owner_mask(frame[y:y + h, x:x + w], self.config.owner_hsv_low, self.config.owner_hsv_high) & mask
         return float(own.sum() / max(1, mask.sum()) / ref)
 
-    def _classify(self, found: list[SheepCandidate]) -> tuple[list[SheepCandidate], list[SheepCandidate]]:
+    def _classify(self, found: list[SheepCandidate], hsv: np.ndarray | None = None) -> tuple[list[SheepCandidate], list[SheepCandidate]]:
+        """Split into clickable sheep and rejected ones.
+
+        Overlapping *accepted* animals stay clickable (``allow_herd_overlap``): a herd pushed
+        under the Town Center overlaps, and a click on either one sends the villager to a
+        player's animal. An accepted animal overlapping something rejected that still looked
+        animal-like (a rider, a carcass, an ambiguous match) is not clicked, nor one with the
+        player colour right under its click point (a villager in front of it).
+        """
         cfg = self.config
         found = sorted(found, key=lambda c: c.score, reverse=True)
         # One animal matched from two collar blobs: keep the best.
@@ -584,14 +632,30 @@ class SheepDetector:
         rejected = [c for c in unique if not c.accepted]
         clear = []
         for c in accepted:
-            others = [o for o in unique if o is not c and o.verdict is not Verdict.LOW_CONFIDENCE]
+            others = [o for o in unique if o is not c and o.verdict is not Verdict.LOW_CONFIDENCE
+                      and not (cfg.allow_herd_overlap and o.accepted)]
             hit = next((o for o in others if iou(c.box, o.box) > cfg.overlap_iou), None)
-            if hit is not None:
+            why = f"overlaps {'another animal' if hit is not None and hit.accepted else 'a rejected look-alike'}"                   f" at ({hit.x}, {hit.y})" if hit is not None else ""
+            if not why and hsv is not None and self._colour_under(hsv, c.x, c.y) > cfg.max_owner_under_click:
+                why = "player colour under the click point (a villager in front?)"
+            if why:
                 rejected.append(SheepCandidate(c.x, c.y, c.box, c.score, c.carcass_score, c.template, c.scale,
-                                               Verdict.OVERLAP, f"overlaps another animal at ({hit.x}, {hit.y})"))
+                                               Verdict.OVERLAP, why))
             else:
                 clear.append(c)
         return clear, rejected
+
+    def _colour_under(self, hsv: np.ndarray, x: int, y: int) -> float:
+        """Share of player-colour pixels in a small disc around (x, y)."""
+        r = max(2, round(self.config.click_clearance * hsv.shape[1] / REFERENCE_SIZE[0]))
+        h, w = hsv.shape[:2]
+        patch = hsv[max(0, y - r):min(h, y + r + 1), max(0, x - r):min(w, x + r + 1)]
+        if patch.size == 0:
+            return 1.0
+        yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
+        disc = (yy - (y - max(0, y - r))) ** 2 + (xx - (x - max(0, x - r))) ** 2 <= r * r
+        own = cv2.inRange(patch, np.array(self.config.owner_hsv_low, np.uint8), np.array(self.config.owner_hsv_high, np.uint8)) > 0
+        return float((own & disc).sum() / max(1, disc.sum()))
 
 
 def iou(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> float:
